@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from ply.lex import TOKEN,LexToken
-import ply.lex as lex
+from libs.ply.lex import TOKEN,LexToken
+import libs.ply.lex as lex
 from libs.Messages import error
 from libs.Datatypes import Position
 from libs.Functions import perlArgs,perl_functions

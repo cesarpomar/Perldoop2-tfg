@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 from libs.Lexer import Lexer
-import ply.yacc as yacc
+import libs.ply.yacc as yacc
 from libs.Options import Options
 from libs.Functions import PerlFunctions
 from libs.Hadoop import Hadoop

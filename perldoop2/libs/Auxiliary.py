@@ -4,7 +4,7 @@ from libs.Datatypes import HASH,LIST,REF,Code,Package
 from libs.Casting import create_type,to_type
 from libs.Variables import is_assign,imports_path,get_function_var,packages
 from libs.Messages import error
-import ply.yacc as yacc
+import libs.ply.yacc as yacc
 import re
 import logging
 
