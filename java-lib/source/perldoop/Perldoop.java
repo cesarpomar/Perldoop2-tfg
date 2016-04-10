@@ -15,8 +15,6 @@ public class Perldoop {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        String[] a=new String[]{"1","2","3","4"};
-        System.out.println(Perl.splice(new Ref<>(a), 1));
         
     }
 

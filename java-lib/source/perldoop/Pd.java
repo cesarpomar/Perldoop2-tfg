@@ -3,10 +3,12 @@ package perldoop;
 import java.io.BufferedReader;
 import java.io.FileDescriptor;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import perldoop.util.Sequence;
 
 /**
  * Clase para imitar comportamientos nativos de perl
@@ -17,21 +19,22 @@ public class Pd {
 
     /**
      * Compara dos expresiones
+     *
      * @param exp1 expresion 1
      * @param exp2 expresion 2
      * @return 0 si son iguales, 1 mayor y -1 menor
      */
-    public static  Integer cmp(Comparable exp1,Comparable exp2){
-        int cmp=exp1.compareTo(exp2);
-        if(cmp==0){
+    public static Integer cmp(Comparable exp1, Comparable exp2) {
+        int cmp = exp1.compareTo(exp2);
+        if (cmp == 0) {
             return 0;
-        }else if(cmp>0){
+        } else if (cmp > 0) {
             return 1;
-        }else{
+        } else {
             return -1;
-        }  
+        }
     }
-    
+
     /**
      * Calcula el tamaño en funcion del objeto pasado
      *
@@ -146,7 +149,7 @@ public class Pd {
     public static Boolean eval(Ref exp) {
         return exp != null;
     }
-    
+
     /**
      * Evalua una expresion
      *
@@ -283,6 +286,9 @@ public class Pd {
      */
     public static Integer[] range(Integer init, Integer end) {
         int tam = end - init;
+        if (end * init <= 0) {//Numero 0
+            tam++;
+        }
         if (tam > 0) {
             Integer[] array = new Integer[tam];
             for (int i = init, p = 0; i <= end; i++, p++) {
@@ -303,14 +309,39 @@ public class Pd {
      * @return Array del rango
      */
     public static String[] range(String init, String end) {
-        int tam = init.length();
-        if (init.matches("[+-]?[0-9]+") && end.matches("[+-]?[0-9]+")) {
-            return new String[0];
-        } else if (init.matches("[a-zA-Z]+") && end.matches("[a-zA-Z]+")) {
-            return new String[0];
-        } else {
-            return new String[0];
+        String rex = "[+-]?(([0-9]+(\\.[0-9]*)?)|([0-9]*\\.[0-9]+))";
+        if (init.matches(rex) && end.matches(rex)) {
+            int initN = Integer.parseInt(init);
+            int endN = Integer.parseInt(end);
+            int tam = endN - initN;
+            if (endN * initN <= 0) {
+                tam++;
+            }
+            if (tam > 0) {
+                String[] array = new String[tam];
+                for (int i = initN, p = 0; i <= endN; i++, p++) {
+                    array[p] = String.valueOf(i);
+                }
+                return array;
+            } else {
+                return new String[0];
+            }
+        } else if (end.length() >= init.length()) {
+            if (end.compareToIgnoreCase(init) > 0 || end.length() > init.length()) {
+                ArrayList<String> seq = new ArrayList<>();
+                Sequence[] buffer = Sequence.getSequence(init, end);
+                while (true) {
+                    String actual = buffer[0].getString();
+                    seq.add(actual);
+                    if (actual.equalsIgnoreCase(end)) {
+                        break;
+                    }
+                    for (int i = 0; buffer[i].next(); i++);
+                }
+                return seq.toArray(new String[0]);
+            }
         }
+        return new String[0];
     }
 
     /**
@@ -370,6 +401,7 @@ public class Pd {
 
     /**
      * Comprueba si el objeto tiene representacion
+     *
      * @param obj Objeto
      * @return Representacion perl o null si es el propio objeto
      */
@@ -397,7 +429,7 @@ public class Pd {
     }
 
     /**
-     * Convierte un array en una cadena
+     *
      * @param array Array
      * @return Cadena de valores
      */
@@ -423,6 +455,7 @@ public class Pd {
 
     /**
      * Convierte una lista en una cadena
+     *
      * @param l Lista
      * @return Cadena de valores
      */
@@ -448,6 +481,7 @@ public class Pd {
 
     /**
      * Convierte un hash en una cadena
+     *
      * @param <V> Tipo del valor del hash
      * @param m Hash
      * @return Cadena de clave valor
@@ -473,13 +507,14 @@ public class Pd {
             return sb.toString();
         }
     }
-    
+
     /**
      * Ejecuta un comando en el shell del sistema
+     *
      * @param cmd Comando
      * @return Salida del comando
      */
-    public static String cmd(String cmd){
+    public static String cmd(String cmd) {
         try {
             Process exec = Runtime.getRuntime().exec(cmd);
             exec.waitFor();
@@ -489,24 +524,26 @@ public class Pd {
             return "";
         }
     }
-    
+
     /**
      * Lee una linea de la entrada por teclado
+     *
      * @return
      */
-    public static String read(){
+    public static String read() {
         Scanner sc = new Scanner(System.in);
-        return sc.nextLine()+"\n";
+        return sc.nextLine() + "\n";
     }
-    
+
     /**
      * Lee un conjunto de leas de la entrada por teclado
+     *
      * @return
      */
-    public static String[] readLines(){
+    public static String[] readLines() {
         FileReader file = new FileReader(FileDescriptor.in);
         BufferedReader buffer = new BufferedReader(file);
-        return buffer.lines().map(line->line+"\n").toArray(String[]::new); 
+        return buffer.lines().map(line -> line + "\n").toArray(String[]::new);
     }
 
 }

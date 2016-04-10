@@ -73,7 +73,10 @@ packages={}
 imports_path={
 'List':'java.util.List',
 'Map':'java.util.Map',
-'Iterator':'java.util.Iterator',    
+'Iterator':'java.util.Iterator',  
+'Mapper':'org.apache.hadoop.mapreduce.Mapper',
+'Reducer':'org.apache.hadoop.mapreduce.Reducer',  
+'HadoopTypes':'org.apache.hadoop.io.*'
 }
 
 #Inicializa las variables globales

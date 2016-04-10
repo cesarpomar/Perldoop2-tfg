@@ -39,6 +39,7 @@ class Hadoop():
         #Si especifica tipo, cambiamos el por defecto
         if len(p)>2:
             self.hadoop_type=[STRING,var_types[p[2]],var_types[p[3]],var_types[p[4]]]
+        self.imports['Mapper']=True
             
     def p_reducer_init(self,p):
         '''reducer_init : REDUCER_CODE
@@ -49,6 +50,7 @@ class Hadoop():
     
     def p_mapper_code(self,p):
         'statement_type : mapper_init LBRACE block_header statements RBRACE'
+        self.imports['HadoopTypes']=True
         #Extendemos la clase
         self.extend_class='Mapper<Object,'+hd_types[self.hadoop_type[1]]+','
         self.extend_class+=hd_types[self.hadoop_type[2]]+','+hd_types[self.hadoop_type[3]]+','+'>'
@@ -116,6 +118,7 @@ class Hadoop():
         self.assigns.pop()
         self.variables.pop()
         p[0]=Code()
+        self.imports['Reducer']=True
         
     def p_reducer_change(self,p):
         'block : REDUCER_CHANGE LBRACE block_header statements RBRACE'
@@ -125,6 +128,7 @@ class Hadoop():
         self.assigns.pop()
         self.variables.pop()
         p[0]=Code()
+        self.imports['Reducer']=True
         
     def p_reducer_key(self,p):
         'statement_type : labels_line list post_block SEMI REDUCER_KEY line_comment '
@@ -156,6 +160,7 @@ class Hadoop():
             
     def p_reducer_code(self,p):
         'block : reducer_init LBRACE block_header REDUCER_VAR statements REDUCER_VAR statements RBRACE'
+        self.imports['HadoopTypes']=True
         #Genera el reducer con la union de los bloques
         if not(self.reducer_op and self.reducer_change and self.reducer_key and self.reducer_value) and self.reducer_vars:
             error(self,'HD_REDUCER_INCOMPLETE',Position(p,1)) 
