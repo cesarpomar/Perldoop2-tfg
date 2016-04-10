@@ -151,7 +151,7 @@ class Parser(Options,PerlFunctions,Hadoop):
 	
 	def p_function_types(self,p):
 		'function_types : function_types TYPE'	
-		p[0]=p[1]+[[var_types[p[3]]]]
+		p[0]=p[1]+[[var_types[p[2]]]]
 		
 	def p_function_types_ref(self,p):
 		'function_types : function_types REF dimension TYPE'	
@@ -191,7 +191,7 @@ class Parser(Options,PerlFunctions,Hadoop):
 		
 	def p_statement_advanced_declare(self,p):
 		'statement_type : declare TYPE'
-		p[0]=advanced_declare(self,p[1],[var_types[type]],Position(p,2))
+		p[0]=advanced_declare(self,p[1],[var_types[p[2]]],Position(p,2))
 		
 	def p_statement_advanced_declare_dim(self,p):
 		'statement_type : declare dimension TYPE'

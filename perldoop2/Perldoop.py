@@ -8,7 +8,7 @@ import sys
 import os.path
 import re
 
-sys.argv=[sys.argv[0],"-out","D:\\",'-m','-oc','D:\\test.pl',]
+#sys.argv=[sys.argv[0],"-out","D:\\",'-m','-oc','D:\\manual\\MultiAsignacion.pl',]
 #sys.argv=[sys.argv[0],"-h"]
 
 def analyzer(files,args,output,main=False):

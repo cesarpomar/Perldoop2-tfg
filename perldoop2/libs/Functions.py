@@ -554,11 +554,11 @@ class PerlFunctions():
         #Formato de la funcion
         code=Code(type=list[0].type,declares=declares,pos=pos,flags={STATEMENT:True})  
         #Si tiene mas argumentos
-        if len(p)>3:
+        if len(list)>2:
             check_code(self,list[2])  
             declares+=list[2].declares
             value+=', '+to_integer(list[2])
-            if len(p)>4:
+            if len(list)>3:
                 check_code(self,list[3])  
                 declares+=list[3].declares
                 value+=', '+to_string(list[2])
@@ -600,11 +600,11 @@ class PerlFunctions():
         #codigo
         value=to_integer(list[1])
         #Si tiene mas argumentos
-        if len(p)>3:
+        if len(list)>2:
             check_code(self,list[2])  
             declares+=list[2].declares
             value+=', '+to_integer(list[2])
-            if len(p)>4:
+            if len(list)>3:
                 #Errores del ultimo argumento
                 if list[3].type[0] not in (ARRAY,LIST):
                     #Cast para forzar un error

@@ -22,6 +22,7 @@ class Hadoop():
         super().__init__() 
         self.hadoop_type=[STRING,STRING,STRING,STRING]  #Tipo para mapper o reducer
         self.mapper_code=False     #Existe codigo de mapper
+        self.mapper_loop=False      #Existe un loop mapper
         self.reducer_op=None       #Codigo para reduccion
         self.reducer_change=None   #Codigo para cada clave
         self.reducer_vars=None     #Clave del reducer
@@ -72,18 +73,19 @@ class Hadoop():
         'loop_head : MAPPER_LOOP WHILE LPAREN var_access EQUALS STDIN RPAREN'  
         if not self.mapper_code:
             error(self,'HD_MAPPER_LOOP_ALONE',Position(p,1))
-        elif self.mapper_type:
+        elif self.mapper_loop:
             error(self,'HD_MAPPER_MANY_LOOP',Position(p,1))
         #Cogemos el valor del mapper  
         code=equals(self, p[4], Code(type=[hd_types[self.hadoop_type[1]]],value='pd_value.get()'))    
         #Podemos las declaraciones del codigo
-        code.value='{\n'+create_declare(self,code)+code.value+'}\n'
+        code.value='{\n'+create_declare(code)+code.value+'}\n'
         #Las borramos
         code.declares=[]
         p[0]=code 
     
     def p_mapper_loop(self,p):
         'block : loop_head LBRACE statements RBRACE'
+        self.mapper_loop=True
         if NEXT in p[3].flags or LAST in p[3].flags:
             error(self, 'HD_NEXT_LAST', Position(p,2))
         #Borramos todo sobre las variables dentro del bloque
