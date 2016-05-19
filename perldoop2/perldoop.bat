@@ -1,1 +1,1 @@
-python %~dp0\Perldoop.py %*
+python %~dp0\perldoop.py %*
