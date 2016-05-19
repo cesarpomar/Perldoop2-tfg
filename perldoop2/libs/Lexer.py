@@ -1,80 +1,80 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from libs.ply.lex import TOKEN,LexToken
-import libs.ply.lex as lex
-from libs.Messages import error
-from libs.Datatypes import Position
-from libs.Functions import perlArgs,perl_functions
-from libs.Variables import packages
 import re
+from libs.ply.lex import TOKEN, LexToken
+import libs.ply.lex as lex
+from libs import Messages as Msg
+from libs import Variables as Var
+from libs import Functions as Ftn
+from libs import Position
 
 
 class Lexer():
 
 	def __init__(self):
-		self.lexer=lex.lex(object=self)	#Analizador lexico
-		self.debug_mode=False			#Modo depuracion
-		self.parser=None				#Analizador sintactico
-		self.comment=None				#Token del comentario actual sin etiquetas
-		self.perl_line=-1				#Linea del ultimo componente perl
-		self.buffer=[]					#Buffer de tokens
-		self.t=None						#Token actual
+		self.lexer = lex.lex(object=self)  # Analizador lexico
+		self.debug_mode = False  # Modo depuracion
+		self.parser = None  # Analizador sintactico
+		self.comment = None  # Token del comentario actual sin etiquetas
+		self.perl_line = -1  # Linea del ultimo componente perl
+		self.buffer = []  # Buffer de tokens
+		self.t = None  # Token actual
 		
 	def input(self, text):	
 		self.lexer.input(text)
-		self.input=text	
-		self.t=self.lexer.token()
+		self.input = text	
+		self.t = self.lexer.token()
 		
 	def token(self):
-		token=self.token_buffer()
+		token = self.token_buffer()
 		if self.debug_mode:
 			print(token)
 		return token	
 		
-	#Busca la columna correspondiente a un token, mas eficiente que calcularlo para todos
-	def find_column(self,lexpos):
-		last_cr = self.input.rfind('\n',0,lexpos)
+	# Busca la columna correspondiente a un token, mas eficiente que calcularlo para todos
+	def find_column(self, lexpos):
+		last_cr = self.input.rfind('\n', 0, lexpos)
 		if last_cr < 0:
-			last_cr = - 1
+			last_cr = -1
 		column = (lexpos - last_cr)
 		return column
 	
-	def t_ANY_error(self,t):
-		error(self.parser,'ILEGAL_TOKEN',Position(line=t.lineno,lexpos=t.lexpos),c=t.value[0])
+	def t_ANY_error(self, t):
+		Msg.error(self.parser, 'ILEGAL_TOKEN', Position(line=t.lineno, lexpos=t.lexpos), c=t.value[0])
 		t.lexer.skip(1)
 		
 		#############################33  REVISADO ##################
 	
-	##
-	## Palabras reservadas
-	##
+	# #
+	# # Palabras reservadas
+	# #
 	
-	reserved_map={}
+	reserved_map = {}
 	
-	reserved=(
-	#Declaraciones		
-	'MY','SUB','OUR','PACKAGE',
+	reserved = (
+	# Declaraciones		
+	'MY', 'SUB', 'OUR', 'PACKAGE',
 	
-	#Control de Flujo
-	'WHILE','DO','FOR','UNTIL',
-	'IF','ELSIF','ELSE','UNLESS',
-	'LAST','NEXT','RETURN',
+	# Control de Flujo
+	'WHILE', 'DO', 'FOR', 'UNTIL',
+	'IF', 'ELSIF', 'ELSE', 'UNLESS',
+	'LAST', 'NEXT', 'RETURN',
 	
-	#Funciones de Perl
-	'CMP','X','UNDEF'
-	)+perl_functions
+	# Funciones de Perl
+	'CMP', 'X', 'UNDEF'
+	) + Ftn.perl_functions
 	
-	#Asignamos palabras a los tokens
+	# Asignamos palabras a los tokens
 	for reserved_word in reserved:
 		reserved_map[reserved_word.lower()] = reserved_word
 		
-	#Casos en que la palabra difiere del token
-	reserved_map['foreach']='FOR' 
-	reserved_map['and']='LLAND' 
-	reserved_map['or']='LLOR' 
-	reserved_map['xor']='LLXOR' 
-	reserved_map['not']='LLNOT' 
+	# Casos en que la palabra difiere del token
+	reserved_map['foreach'] = 'FOR' 
+	reserved_map['and'] = 'LLAND' 
+	reserved_map['or'] = 'LLOR' 
+	reserved_map['xor'] = 'LLXOR' 
+	reserved_map['not'] = 'LLNOT' 
 	reserved_map['le'] = 'STR_LT'
 	reserved_map['gt'] = 'STR_GT'
 	reserved_map['lt'] = 'STR_LE'
@@ -83,509 +83,509 @@ class Lexer():
 	reserved_map['ne'] = 'RSTR_NE'
 
 	
-	##
-	## Etiquetas perldoop
-	##
+	# #
+	# # Etiquetas perldoop
+	# #
 	
-	labels_maps={}
+	labels_maps = {}
 	
-	#Etiquetas de tipo
-	labels_type=('BOOLEAN','INTEGER','LONG','FLOAT','DOUBLE','STRING','FILE')
+	# Etiquetas de tipo
+	labels_type = ('BOOLEAN', 'INTEGER', 'LONG', 'FLOAT', 'DOUBLE', 'STRING', 'FILE')
 	
 	for label in labels_type:
 		labels_maps[label.lower()] = 'TYPE'
 	
-	#Etiquetas que no tienen la misma palabra que token
-	labels_value=('VAR','TYPE','SIZE','L_ARRAY','L_HASH','L_LIST')	
+	# Etiquetas que no tienen la misma palabra que token
+	labels_value = ('VAR', 'TYPE', 'SIZE', 'L_ARRAY', 'L_HASH', 'L_LIST')	
 	
-	#Las colecciones estan para no entrar en conflicto con la propia variable
+	# Las colecciones estan para no entrar en conflicto con la propia variable
 	labels_maps['array'] = 'L_ARRAY'
 	labels_maps['hash'] = 'L_HASH'
 	labels_maps['list'] = 'L_LIST'	
 	
-	#Etiquetas que tienen la misma palabra como token	
-	labels_key=('REF','ARGS','RETURNS',
-			#Hadoop
-			'MAPPER_CODE','MAPPER_LOOP','HADOOP_PRINT',
-			'REDUCER_CODE','REDUCER_OP','REDUCER_CHANGE',
-			'REDUCER_KEY','REDUCER_VALUE','REDUCER_VAR',
+	# Etiquetas que tienen la misma palabra como token	
+	labels_key = ('REF', 'ARGS', 'RETURNS',
+			# Hadoop
+			'MAPPER_CODE', 'MAPPER_LOOP', 'HADOOP_PRINT',
+			'REDUCER_CODE', 'REDUCER_OP', 'REDUCER_CHANGE',
+			'REDUCER_KEY', 'REDUCER_VALUE', 'REDUCER_VAR',
 	)
 	
-	#Asignamos palabras a los tokens
+	# Asignamos palabras a los tokens
 	for label in labels_key:
 		labels_maps[label.lower()] = label
 		
-	### Etiquetas que se mueven a principio de linea
+	# ## Etiquetas que se mueven a principio de linea
 	
-	labels_moved={}
+	labels_moved = {}
 	
-	#No se mueven
+	# No se mueven
 	for label in labels_key:
-		labels_moved[label]=False
+		labels_moved[label] = False
 		
-	#Se mueven
-	for label in labels_value+('REF',):
-		labels_moved[label]=True
+	# Se mueven
+	for label in labels_value + ('REF',):
+		labels_moved[label] = True
 		
-	##
-	## Estado para etiquetas
-	##
+	# #
+	# # Estado para etiquetas
+	# #
 	
-	states = (('labels','exclusive'),)
+	states = (('labels', 'exclusive'),)
 	
-	##
-	## Tokens
-	##
+	# #
+	# # Tokens
+	# #
 	
 	tokens = reserved + labels_key + labels_value + (
 		# Identificadores						
-		'DOLLAR','AT','PERCENTAGE','ID',
+		'DOLLAR', 'AT', 'PERCENTAGE', 'ID',
 
 		# Constantes
-		'INT_NUMBER','FLOAT_NUMBER','STRING_QUOTE','STRING_DOUBLE_QUOTE','CMD',
+		'INT_NUMBER', 'FLOAT_NUMBER', 'STRING_QUOTE', 'STRING_DOUBLE_QUOTE', 'CMD',
 
 		# Operadores
-		'PLUS', 'MINUS', 'TIMES', 'DIVIDE','POW',
+		'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'POW',
 		'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
-		'LOR', 'LAND', 'LNOT','LLAND','LLOR','LLNOT','LLXOR',
+		'LOR', 'LAND', 'LNOT', 'LLAND', 'LLOR', 'LLNOT', 'LLXOR',
 		'NUM_LT', 'NUM_LE', 'NUM_GT', 'NUM_GE', 'NUM_EQ', 'NUM_NE',
 		'STR_LT', 'STR_LE', 'STR_GT', 'STR_GE', 'STR_EQ', 'STR_NE',
-		'STR_REX','STR_NO_REX','SMART_EQ','CMP_NUM',
+		'STR_REX', 'STR_NO_REX', 'SMART_EQ', 'CMP_NUM',
 
 		# Asignacion
-		'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL','POWEQUAL',
+		'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'POWEQUAL',
 		'PLUSEQUAL', 'MINUSEQUAL',
-		'LSHIFTEQUAL','RSHIFTEQUAL', 'ANDEQUAL', 'XOREQUAL',
-		'OREQUAL','LANDEQUAL','LOREQUAL','PERIODEQUAL','XEQUAL',
+		'LSHIFTEQUAL', 'RSHIFTEQUAL', 'ANDEQUAL', 'XOREQUAL',
+		'OREQUAL', 'LANDEQUAL', 'LOREQUAL', 'PERIODEQUAL', 'XEQUAL',
 
 		# Incremento/decremento
 		'PLUSPLUS', 'MINUSMINUS',
 
 		# Delimitadores
-		'LPAREN', 'RPAREN',			# ( )
-		'LBRACKET', 'RBRACKET',		# [ ]
-		'LBRACE', 'RBRACE',			# { }
-		'COMMA', 'PERIOD',			# , .
-		'SEMI', 'COLON',			# ; :
-		'BACKSLASH','POINTED',		# \	->
-		'QUEST_CLOSE','TWO_PERIOD',	# ? ..
-		'TWO_COLON',				# ::
+		'LPAREN', 'RPAREN',  # ( )
+		'LBRACKET', 'RBRACKET',  # [ ]
+		'LBRACE', 'RBRACE',  # { }
+		'COMMA', 'PERIOD',  # , .
+		'SEMI', 'COLON',  # ; :
+		'BACKSLASH', 'POINTED',  # \	->
+		'QUEST_CLOSE', 'TWO_PERIOD',  # ? ..
+		'TWO_COLON',  # ::
 		
-		#Expresiones regualres
-		'M_REGEX','S_REGEX','Y_REGEX',
+		# Expresiones regualres
+		'M_REGEX', 'S_REGEX', 'Y_REGEX',
 
 		# Entrada/Salida
 		'STDIN',
 		
 		# Comentarios
-		'COMMENT','COMMENT_LINE','JAVA_LINE','JAVA_IMPORT'		
+		'COMMENT', 'COMMENT_LINE', 'JAVA_LINE', 'JAVA_IMPORT'		
 	)
 	
-	##
-	## Expresiones
-	##
+	# #
+	# # Expresiones
+	# #
 	
 	# Identificadores
-	ID					= r'[A-Za-z_][\w_]*'
-	t_DOLLAR			= r'\$'
-	t_AT				= r'@'
-	t_PERCENTAGE		= r'%'
+	ID					 = r'[A-Za-z_][\w_]*'
+	t_DOLLAR			 = r'\$'
+	t_AT				 = r'@'
+	t_PERCENTAGE		 = r'%'
 
-	#Constantes
-	INT_NUMBER			= r'(([1-9]\d*)|(o[xX][a-fA-F\d]+)|(o[bB][01]+)|(0[0-7]*))'
-	FLOAT_NUMBER		= r'((\d*\.\d+)|(\d+\.\d*))'
-	SCIENTIFIC			= r'('+INT_NUMBER+'|'+FLOAT_NUMBER+')eE(\+-)?'+INT_NUMBER
-	STRING_QUOTE		= r'\'([^\'\\\n]|(\\.))*\''
-	STRING_DOUBLE_QUOTE	= r'"([^"\\\n]|(\\.))*"'
-	CMD					= r'`.+`'
+	# Constantes
+	INT_NUMBER			 = r'(([1-9]\d*)|(o[xX][a-fA-F\d]+)|(o[bB][01]+)|(0[0-7]*))'
+	FLOAT_NUMBER		 = r'((\d*\.\d+)|(\d+\.\d*))'
+	SCIENTIFIC			 = r'(' + INT_NUMBER + '|' + FLOAT_NUMBER + ')eE(\+-)?' + INT_NUMBER
+	STRING_QUOTE		 = r'\'([^\'\\\n]|(\\.))*\''
+	STRING_DOUBLE_QUOTE	 = r'"([^"\\\n]|(\\.))*"'
+	CMD					 = r'`.+`'
 	
 	# Operadores
-	t_PLUS				= r'\+'
-	t_MINUS				= r'-'
-	t_TIMES				= r'\*'
-	t_DIVIDE			= r'/'
-	t_POW				= r'\*\*'
-	t_OR				= r'\|'
-	t_AND				= r'&'
-	t_NOT				= r'~'
-	t_XOR				= r'\^'
-	t_LSHIFT			= r'<<'
-	t_RSHIFT			= r'>>'
-	t_LOR				= r'\|\|'
-	t_LAND				= r'&&'
-	t_LNOT				= r'!'
-	t_NUM_LT			= r'<'
-	t_NUM_GT			= r'>'
-	t_NUM_LE			= r'<='
-	t_NUM_GE			= r'>='
-	t_NUM_EQ			= r'=='
-	t_NUM_NE			= r'!='
-	t_STR_REX			= r'=~'
-	t_STR_NO_REX		= r'!~'
-	t_SMART_EQ			= r'~~'
-	t_CMP_NUM			= r'<=>'
+	t_PLUS				 = r'\+'
+	t_MINUS				 = r'-'
+	t_TIMES				 = r'\*'
+	t_DIVIDE			 = r'/'
+	t_POW				 = r'\*\*'
+	t_OR				 = r'\|'
+	t_AND				 = r'&'
+	t_NOT				 = r'~'
+	t_XOR				 = r'\^'
+	t_LSHIFT			 = r'<<'
+	t_RSHIFT			 = r'>>'
+	t_LOR				 = r'\|\|'
+	t_LAND				 = r'&&'
+	t_LNOT				 = r'!'
+	t_NUM_LT			 = r'<'
+	t_NUM_GT			 = r'>'
+	t_NUM_LE			 = r'<='
+	t_NUM_GE			 = r'>='
+	t_NUM_EQ			 = r'=='
+	t_NUM_NE			 = r'!='
+	t_STR_REX			 = r'=~'
+	t_STR_NO_REX		 = r'!~'
+	t_SMART_EQ			 = r'~~'
+	t_CMP_NUM			 = r'<=>'
 	
 	# Assignment operators
-	t_EQUALS			= r'='
-	t_TIMESEQUAL		= r'\*='
-	t_DIVEQUAL			= r'/='
-	t_MODEQUAL			= r'%='
-	t_POWEQUAL			= r'\*\*='
-	t_PLUSEQUAL			= r'\+='
-	t_MINUSEQUAL		= r'-='
-	t_LSHIFTEQUAL		= r'<<='
-	t_RSHIFTEQUAL		= r'>>='
-	t_ANDEQUAL			= r'&='
-	t_OREQUAL			= r'\|='
-	t_XOREQUAL			= r'\^='
-	t_LANDEQUAL			= r'&&='
-	t_LOREQUAL			= r'\|\|='
-	t_PERIODEQUAL		= r'\.='
-	XEQUAL				= r'x='
+	t_EQUALS			 = r'='
+	t_TIMESEQUAL		 = r'\*='
+	t_DIVEQUAL			 = r'/='
+	t_MODEQUAL			 = r'%='
+	t_POWEQUAL			 = r'\*\*='
+	t_PLUSEQUAL			 = r'\+='
+	t_MINUSEQUAL		 = r'-='
+	t_LSHIFTEQUAL		 = r'<<='
+	t_RSHIFTEQUAL		 = r'>>='
+	t_ANDEQUAL			 = r'&='
+	t_OREQUAL			 = r'\|='
+	t_XOREQUAL			 = r'\^='
+	t_LANDEQUAL			 = r'&&='
+	t_LOREQUAL			 = r'\|\|='
+	t_PERIODEQUAL		 = r'\.='
+	XEQUAL				 = r'x='
 	
 	# Incremento/decremento
-	t_PLUSPLUS			= r'\+\+'
-	t_MINUSMINUS		= r'--'
+	t_PLUSPLUS			 = r'\+\+'
+	t_MINUSMINUS		 = r'--'
 	
 	# Delimeters
-	t_LPAREN			= r'\('
-	t_RPAREN			= r'\)'
-	t_LBRACKET			= r'\['
-	t_RBRACKET			= r'\]'
-	t_COMMA				= r'(,|=>)'
-	t_PERIOD			= r'\.'
-	t_TWO_PERIOD		= r'\.\.'
-	t_QUEST_CLOSE		= r'\?'
-	t_SEMI				= r';'
-	t_COLON				= r':'
-	t_TWO_COLON			= r'::'
-	t_LBRACE			= r'\{'
-	t_RBRACE			= r'\}'
-	t_BACKSLASH			= r'\\'
-	t_POINTED			= r'->'
+	t_LPAREN			 = r'\('
+	t_RPAREN			 = r'\)'
+	t_LBRACKET			 = r'\['
+	t_RBRACKET			 = r'\]'
+	t_COMMA				 = r'(,|=>)'
+	t_PERIOD			 = r'\.'
+	t_TWO_PERIOD		 = r'\.\.'
+	t_QUEST_CLOSE		 = r'\?'
+	t_SEMI				 = r';'
+	t_COLON				 = r':'
+	t_TWO_COLON			 = r'::'
+	t_LBRACE			 = r'\{'
+	t_RBRACE			 = r'\}'
+	t_BACKSLASH			 = r'\\'
+	t_POINTED			 = r'->'
 	
-	#Expresiones regualres
-	REGEX_MOD			= '(i|s|m|x|o|p|d|a|u|l|g|cg|e)?'
-	M_REGEX				= r'm/.*/'+REGEX_MOD
-	S_REGEX				= r's/.*/.*/'+REGEX_MOD
-	Y_REGEX				= r'(y|tr)/.*/.*/'+REGEX_MOD
+	# Expresiones regualres
+	REGEX_MOD			 = '(i|s|m|x|o|p|d|a|u|l|g|cg|e)?'
+	M_REGEX				 = r'm/.*/' + REGEX_MOD
+	S_REGEX				 = r's/.*/.*/' + REGEX_MOD
+	Y_REGEX				 = r'(y|tr)/.*/.*/' + REGEX_MOD
 
-	#Entrada/Salida
-	t_STDIN				= r'<STDIN>'
+	# Entrada/Salida
+	t_STDIN				 = r'<STDIN>'
 	
-	#Ignorar	
-	t_ignore					= ' \t\r'
-	t_labels_ignore 			= ''
+	# Ignorar	
+	t_ignore					 = ' \t\r'
+	t_labels_ignore 			 = ''
 	
-	#Comentarios
-	COMMENT				= r'\#'
-	COMMENT_SPECIAL		= r'\#!.*'
-	COMMENT_SCAPE		= r'.'
-	COMMENT_EXIT		= r'\n'
+	# Comentarios
+	COMMENT				 = r'\#'
+	COMMENT_SPECIAL		 = r'\#!.*'
+	COMMENT_SCAPE		 = r'.'
+	COMMENT_EXIT		 = r'\n'
 	COMMENT_IGNORE_LINE = r'.*\#<ignore-line>'
-	COMMENT_IGNORE_BLOCK= r'\#<ignore-block>\n(.|\n)*\#<ignore-block>'
+	COMMENT_IGNORE_BLOCK = r'\#<ignore-block>\n(.|\n)*\#<ignore-block>'
 	COMMENT_CODE_IMPORT = r'\#<java-import>.*'
-	COMMENT_CODE_LINE	= r'\#<java-line>.*'
+	COMMENT_CODE_LINE	 = r'\#<java-line>.*'
 	
-	#Etiquetas
-	LABEL_ID			= r'<'+ID+'>'
-	LABEL_SIZE			= r'<[1-9][0-9]*>'
-	LABEL_VAR			= r'<(\$|@|%)'+ID+'>'
+	# Etiquetas
+	LABEL_ID			 = r'<' + ID + '>'
+	LABEL_SIZE			 = r'<[1-9][0-9]*>'
+	LABEL_VAR			 = r'<(\$|@|%)' + ID + '>'
 	
-	#Regla para cambiar de linea
-	def t_newline(self,t):
+	# Regla para cambiar de linea
+	def t_newline(self, t):
 		r'\n+'
 		t.lexer.lineno += len(t.value)
 	
-	#Ignora la importacion de paquetes	
-	def t_ignore_pack(self,t):	
+	# Ignora la importacion de paquetes	
+	def t_ignore_pack(self, t):	
 		r'(use .*;)|(require .*;)'
 		pass
 		
-	#Regla para flotantes
+	# Regla para flotantes
 	@TOKEN(FLOAT_NUMBER)
 	def t_FLOAT_NUMBER(self, t):
 		return t
 	
-	#Regla para notacion cientifica
+	# Regla para notacion cientifica
 	@TOKEN(SCIENTIFIC)
 	def t_SCIENTIFIC(self, t):
 		return t
 	
-	#Regla para enteros
+	# Regla para enteros
 	@TOKEN(INT_NUMBER)
 	def t_INT_NUMBER(self, t):
 		return t	
 	
-	#Regla para devolver una cadena sin las comillas simples
+	# Regla para devolver una cadena sin las comillas simples
 	@TOKEN(STRING_QUOTE)
 	def t_STRING_QUOTE(self, t):
-		t.value=t.value[1:-1]
+		t.value = t.value[1:-1]
 		return t
 	
-	#Regla para devolver una cadena sin las comillas dobles
+	# Regla para devolver una cadena sin las comillas dobles
 	@TOKEN(STRING_DOUBLE_QUOTE)
 	def t_STRING_DOUBLE_QUOTE(self, t):
-		t.value=t.value[1:-1]
+		t.value = t.value[1:-1]
 		return t	
 	
-	#Regla para ejecutar comandos 
+	# Regla para ejecutar comandos 
 	@TOKEN(CMD)
 	def t_CMD(self, t):
-		t.value=t.value[1:-1]
+		t.value = t.value[1:-1]
 		return t	
 	
-	#Expresion regular m
+	# Expresion regular m
 	@TOKEN(M_REGEX)
 	def t_M_REGEX(self, t):
 		return t	
 	
-	#Expresion regular m
+	# Expresion regular m
 	@TOKEN(S_REGEX)
 	def t_S_REGEX(self, t):
 		return t	
 	
-	#Expresion regular m
+	# Expresion regular m
 	@TOKEN(Y_REGEX)
 	def t_Y_REGEX(self, t):
 		return t		
 	
-	#Regla para los comentarios especiales
+	# Regla para los comentarios especiales
 	@TOKEN(COMMENT_SPECIAL)
-	def t_COMMENT_SPECIAL(self,t):
+	def t_COMMENT_SPECIAL(self, t):
 		pass
 	
-	#Regla para ignorar una linea
+	# Regla para ignorar una linea
 	@TOKEN(COMMENT_IGNORE_LINE)
-	def t_COMMENT_IGNORE_LINE(self,t):
+	def t_COMMENT_IGNORE_LINE(self, t):
 		pass
 	
-	#Regla para ignorar un bloque de lineas	
+	# Regla para ignorar un bloque de lineas	
 	@TOKEN(COMMENT_IGNORE_BLOCK)
-	def t_COMMENT_IGNORE_BLOCK(self,t):
+	def t_COMMENT_IGNORE_BLOCK(self, t):
 		pass
 	
-	#Regla para linea nativa java para importar
+	# Regla para linea nativa java para importar
 	@TOKEN(COMMENT_CODE_IMPORT)
-	def t_COMMENT_CODE_IMPORT(self,t):
-		t.type='JAVA_IMPORT'
-		t.value=t.value[14:]+'\n'
+	def t_COMMENT_CODE_IMPORT(self, t):
+		t.type = 'JAVA_IMPORT'
+		t.value = t.value[14:] + '\n'
 		return t	
 	
-	#Regla para linea nativa java
+	# Regla para linea nativa java
 	@TOKEN(COMMENT_CODE_LINE)
-	def t_COMMENT_CODE_LINE(self,t):
-		t.type='JAVA_LINE'
-		t.value=t.value[12:]+'\n'
+	def t_COMMENT_CODE_LINE(self, t):
+		t.type = 'JAVA_LINE'
+		t.value = t.value[12:] + '\n'
 		return t
 	
 	
-	#Regla que inicia la entrada en un comentario
+	# Regla que inicia la entrada en un comentario
 	@TOKEN(COMMENT)
-	def t_COMMENT(self,t):
-		self.comment=t
-		t.value=''
+	def t_COMMENT(self, t):
+		self.comment = t
+		t.value = ''
 		t.lexer.push_state('labels') 
 	
-	#Regla para etiquetas de las variables
+	# Regla para etiquetas de las variables
 	@TOKEN(LABEL_VAR)		
-	def t_labels_var(self,t):
-		t.value=t.value[2:-1]
-		t.type='VAR'
+	def t_labels_var(self, t):
+		t.value = t.value[2:-1]
+		t.type = 'VAR'
 		return t
 	
-	#Regla para las etiquetas de tipos de datos, si no es se incluye como comentario
+	# Regla para las etiquetas de tipos de datos, si no es se incluye como comentario
 	@TOKEN(LABEL_ID)
-	def t_labels_id(self,t):
-		t.value=t.value[1:-1]
+	def t_labels_id(self, t):
+		t.value = t.value[1:-1]
 		if t.value in self.labels_maps:
-			t.type=self.labels_maps[t.value]
+			t.type = self.labels_maps[t.value]
 			return t	
 		else:
-			self.comment.value+='<'+t.value+'>'
+			self.comment.value += '<' + t.value + '>'
 		
-	#Regla que incluye las etiquetes de los tamaños para arrays
+	# Regla que incluye las etiquetes de los tamaños para arrays
 	@TOKEN(LABEL_SIZE)
-	def t_labels_size(self,t):
-		t.value=t.value[1:-1]
-		t.type='SIZE'
+	def t_labels_size(self, t):
+		t.value = t.value[1:-1]
+		t.type = 'SIZE'
 		return t		
 		
-	#Regla para añadir como comentario todo lo que no sea etiqueta
+	# Regla para añadir como comentario todo lo que no sea etiqueta
 	@TOKEN(COMMENT_SCAPE)
-	def t_labels_scape(self,t):
-		self.comment.value+=t.value
+	def t_labels_scape(self, t):
+		self.comment.value += t.value
 	
-	#Regla con la que terminamos el comentario
+	# Regla con la que terminamos el comentario
 	@TOKEN(COMMENT_EXIT)
-	def t_labels_exit(self,t):
-		#Devolvemos el \n para no duplicar la regla de numero de lineas	 
-		self.lexer.lexpos-=1
+	def t_labels_exit(self, t):
+		# Devolvemos el \n para no duplicar la regla de numero de lineas	 
+		self.lexer.lexpos -= 1
 		t.lexer.pop_state() 	
-		t.type='COMMENT'
+		t.type = 'COMMENT'
 		return t
 	
-	#Operador x=	
+	# Operador x=	
 	@TOKEN(XEQUAL)	
 	def t_XEQUAL(self, t):
 		return t
 		
-	#Nombres de funciones o palabras reservadas
+	# Nombres de funciones o palabras reservadas
 	@TOKEN(ID)
 	def t_ID(self, t):
-		#Hay que evitar varaibles con nombre de funciones
-		if not self.buffer or self.buffer[-1].value not in ('$','@','%'):
-			t.type=self.reserved_map.get(t.value,'ID')
+		# Hay que evitar varaibles con nombre de funciones
+		if not self.buffer or self.buffer[-1].value not in ('$', '@', '%'):
+			t.type = self.reserved_map.get(t.value, 'ID')
 		return t
 	
-	###
-	###Funciones Auxiliares del analizador
-	###
-	def token_buffer(self,ready=False):	
-		#Emular parentesis al terminar
+	# ##
+	# ##Funciones Auxiliares del analizador
+	# ##
+	def token_buffer(self, ready=False):	
+		# Emular parentesis al terminar
 		if ready and self.parser.emulate_parens:
 			self.emulate_parens()
 		if self.buffer:
 			return self.buffer.pop(0)
-		stack=[0]	#Principio de la sentencia
-		end=False	#Se ha terminado de leer codigo perl
-		#Si hay un token
+		stack = [0]  # Principio de la sentencia
+		end = False  # Se ha terminado de leer codigo perl
+		# Si hay un token
 		if self.t:
 			while True:
-				#Si no hay token
+				# Si no hay token
 				if not self.t:
 					return self.token_buffer(True)
-				#Si el token es una etiqueta
+				# Si el token es una etiqueta
 				if self.t.type in self.labels_moved:
-					#Si esta en distinta linea
-					if self.perl_line!=self.t.lineno:
-						self.perl_line=self.t.lineno
+					# Si esta en distinta linea
+					if self.perl_line != self.t.lineno:
+						self.perl_line = self.t.lineno
 						return self.token_buffer(True)
-					#Si la etiqueta se tiene que mover
+					# Si la etiqueta se tiene que mover
 					if self.labels_moved[self.t.type]:
-						end=True
+						end = True
 						self.buffer.insert(stack[-1], self.t)
-						stack[-1]+=1
-						self.t=self.lexer.token()
-					#Si no paramos
+						stack[-1] += 1
+						self.t = self.lexer.token()
+					# Si no paramos
 					else:
 						self.buffer.append(self.t)				
-						self.t=self.lexer.token()
+						self.t = self.lexer.token()
 						return self.token_buffer(True)
 				else:
-					#Si no se pude leer mas perl
+					# Si no se pude leer mas perl
 					if end:
 						return self.token_buffer(True)
-					#Si esun comentario
-					elif self.t.type=='COMMENT' :
-						#Si hay que leer comentario y este contiene algo
+					# Si esun comentario
+					elif self.t.type == 'COMMENT' :
+						# Si hay que leer comentario y este contiene algo
 						if self.parser.read_comments and not re.match("^[^ \t]*$", self.t.value):
-							if self.perl_line==self.t.lineno:
-								self.comment.type='COMMENT_LINE'
+							if self.perl_line == self.t.lineno:
+								self.comment.type = 'COMMENT_LINE'
 								self.buffer.append(self.t)				
-						self.t=self.lexer.token()
+						self.t = self.lexer.token()
 						return self.token_buffer(True)		
-					#Si es la llamada a una funcion				
-					elif (self.t.type=='ID' and len(self.buffer)>0 and self.buffer[-1].type=='SUB'):
+					# Si es la llamada a una funcion				
+					elif (self.t.type == 'ID' and len(self.buffer) > 0 and self.buffer[-1].type == 'SUB'):
 						self.buffer.append(self.t)				
-						self.t=self.lexer.token()
+						self.t = self.lexer.token()
 						return self.token_buffer(True)
-					#Si es un punto y coma
-					elif self.t.type=='SEMI':
-						end=True
-					#Si se abren llaves
-					elif self.t.type=='LBRACE':
-						stack.append(len(self.buffer)+1)
-					#Si se cierran llaves
-					elif self.t.type=='RBRACE':
-						#Si se abrieron llaves y hay algo dentro
-						if len(stack)>1 and (len(self.buffer)>0 and self.buffer[-1].type!='LBRACE'):
+					# Si es un punto y coma
+					elif self.t.type == 'SEMI':
+						end = True
+					# Si se abren llaves
+					elif self.t.type == 'LBRACE':
+						stack.append(len(self.buffer) + 1)
+					# Si se cierran llaves
+					elif self.t.type == 'RBRACE':
+						# Si se abrieron llaves y hay algo dentro
+						if len(stack) > 1 and (len(self.buffer) > 0 and self.buffer[-1].type != 'LBRACE'):
 							stack.pop()
 						else:
 							self.buffer.append(self.t)				
-							self.t=self.lexer.token()
+							self.t = self.lexer.token()
 							return self.token_buffer(True)	
 					self.buffer.append(self.t)	
-					self.perl_line=self.t.lineno			
-					self.t=self.lexer.token()
+					self.perl_line = self.t.lineno			
+					self.t = self.lexer.token()
 		return None			
 
-	#Emular unos parentesis despues de las funciones
+	# Emular unos parentesis despues de las funciones
 	def emulate_parens(self):
-		stack=[]	#Pila de argumentos
-		last=None	#Ultimo token leido
-		next=None	#Siguiente token a leer
-		index=0		#Posicion dentro del buffer
-		#Buscamos en todo el buffer
+		stack = []  # Pila de argumentos
+		last = None  # Ultimo token leido
+		next = None  # Siguiente token a leer
+		index = 0  # Posicion dentro del buffer
+		# Buscamos en todo el buffer
 		while index < len(self.buffer):
-			token=self.buffer[index]		#Cogemos el token actual
-			if len(self.buffer)!=index+1:
-				next=self.buffer[index+1]	#Si hay siguiente lo cogemos
-			#Si encontramos una llamada a una funcion definida en el codigo y esta no esta precedida de parentesis
-			if (((token.type=='ID' and token.value in self.parser.functions) or token.type in perlArgs) 
-			and (not last or last.type!='SUB') 	and next and next.type!='LPAREN' and next.type!='TWO_COLON'):
-				#Guardamos en la pila el numero de argumentos
-				if token.type=='ID':
-					#Si pertenece a un paquete
-					if index-2 > -1 and last.type == 'TWO_COLON' and self.buffer[index-2].type=='ID':
-						#Token del paquete
-						last2=self.buffer[index-2]
-						#Si el paquete existe y contiene la funcion
-						if last2.value in packages and token.value in packages[last2.value].functions:
-							stack.append(len(packages[last2.value].functions[token.value].args))
+			token = self.buffer[index]  # Cogemos el token actual
+			if len(self.buffer) != index + 1:
+				next = self.buffer[index + 1]  # Si hay siguiente lo cogemos
+			# Si encontramos una llamada a una funcion definida en el codigo y esta no esta precedida de parentesis
+			if (((token.type == 'ID' and token.value in self.parser.functions) or token.type in Ftn.perlArgs) 
+			and (not last or last.type != 'SUB') 	and next and next.type != 'LPAREN' and next.type != 'TWO_COLON'):
+				# Guardamos en la pila el numero de argumentos
+				if token.type == 'ID':
+					# Si pertenece a un paquete
+					if index - 2 > -1 and last.type == 'TWO_COLON' and self.buffer[index - 2].type == 'ID':
+						# Token del paquete
+						last2 = self.buffer[index - 2]
+						# Si el paquete existe y contiene la funcion
+						if last2.value in Var.packages and token.value in Var.packages[last2.value].functions:
+							stack.append(len(Var.packages[last2.value].functions[token.value].args))
 						else:
 							continue
 					stack.append(len(self.parser.functions[token.value].args))
 				else:
-					stack.append(perlArgs[token.type])
-				#Creamos el token del parentesis
-				t=LexToken()
-				t.lineno=token.lineno
-				t.lexpos=token.lexpos
-				t.type='LPAREN'
-				t.value='('
-				#Lo añadimos
-				self.buffer.insert(index+1, t)
-				#Para que no analice el parentesis
-				index+=1
-			#Si estamos dentro de una lista, las comas no cuentan y lo marcamos con una bandera
-			elif token.type in ('LBRACKET','LBRACE','LPAREN'):
+					stack.append(Ftn.perlArgs[token.type])
+				# Creamos el token del parentesis
+				t = LexToken()
+				t.lineno = token.lineno
+				t.lexpos = token.lexpos
+				t.type = 'LPAREN'
+				t.value = '('
+				# Lo añadimos
+				self.buffer.insert(index + 1, t)
+				# Para que no analice el parentesis
+				index += 1
+			# Si estamos dentro de una lista, las comas no cuentan y lo marcamos con una bandera
+			elif token.type in ('LBRACKET', 'LBRACE', 'LPAREN'):
 				stack.append(token.type)
-			#Si la lista termino quitamos la bandera de la pila				
-			elif (stack and ((token.type == 'RBRACKET' and stack[-1]== 'LBRACKET') or 
-			(token.type == 'RBRACE'  and stack[-1]== 'LBRACE') or 
-			(token.type == 'RPAREN'  and stack[-1]== 'LPAREN'))):
+			# Si la lista termino quitamos la bandera de la pila				
+			elif (stack and ((token.type == 'RBRACKET' and stack[-1] == 'LBRACKET') or 
+			(token.type == 'RBRACE'  and stack[-1] == 'LBRACE') or 
+			(token.type == 'RPAREN'  and stack[-1] == 'LPAREN'))):
 				stack.pop()
-			#Si encontramos una compa fuera de una lista
-			elif token.type=='COMMA' and stack and stack[-1] not in ('LBRACKET','LBRACE','LPAREN'):
-				if stack[-1]>0:		#Funcion sin argumentos
-					stack[-1]-=1	#Quitamos un argumento a la funcion actual
-				if stack[-1]==0:	#Si no quedan arugmentos
-					stack.pop()		#Quitamos la funcion de la pila
-					#Creamos el token del parentesis
-					t=LexToken()
-					t.lineno=token.lineno
-					t.lexpos=token.lexpos
-					t.type='RPAREN'
-					t.value=')'
-					#insertamos en el buffer
+			# Si encontramos una compa fuera de una lista
+			elif token.type == 'COMMA' and stack and stack[-1] not in ('LBRACKET', 'LBRACE', 'LPAREN'):
+				if stack[-1] > 0:  # Funcion sin argumentos
+					stack[-1] -= 1  # Quitamos un argumento a la funcion actual
+				if stack[-1] == 0:  # Si no quedan arugmentos
+					stack.pop()  # Quitamos la funcion de la pila
+					# Creamos el token del parentesis
+					t = LexToken()
+					t.lineno = token.lineno
+					t.lexpos = token.lexpos
+					t.type = 'RPAREN'
+					t.value = ')'
+					# insertamos en el buffer
 					self.buffer.insert(index, t)
-					#Para que no analice el parentesis
-					index+=1
-			#Al llegar a un ;
-			elif token.type=='SEMI':
-				for f in stack:	#Por cada funcion
-					if f not in ('LBRACKET','LBRACE','LPAREN'):#Que no sea bandera
-						#Cerramos todos los parentesis
-						t=LexToken()
-						t.lineno=token.lineno
-						t.lexpos=token.lexpos
-						t.type='RPAREN'
-						t.value=')'
+					# Para que no analice el parentesis
+					index += 1
+			# Al llegar a un ;
+			elif token.type == 'SEMI':
+				for f in stack:  # Por cada funcion
+					if f not in ('LBRACKET', 'LBRACE', 'LPAREN'):  # Que no sea bandera
+						# Cerramos todos los parentesis
+						t = LexToken()
+						t.lineno = token.lineno
+						t.lexpos = token.lexpos
+						t.type = 'RPAREN'
+						t.value = ')'
 						self.buffer.insert(index, t)
-				stack=[]#limpiamos la pila
-			last=token	#ponemos el anterior
-			next=None	#limpiamos siguiente
-			index+=1	#siguiente posicion
+				stack = []  # limpiamos la pila
+			last = token  # ponemos el anterior
+			next = None  # limpiamos siguiente
+			index += 1  # siguiente posicion
 				
 	
