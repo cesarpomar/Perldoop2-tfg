@@ -193,8 +193,8 @@ class Lexer():
 
 	# Constantes
 	INT_NUMBER			 = r'(([1-9]\d*)|(o[xX][a-fA-F\d]+)|(o[bB][01]+)|(0[0-7]*))'
-	FLOAT_NUMBER		 = r'((\d*\.\d+)|(\d+\.\d*))'
-	SCIENTIFIC			 = r'(' + INT_NUMBER + '|' + FLOAT_NUMBER + ')eE(\+-)?' + INT_NUMBER
+	FLOAT		 		 = r'((\d*\.\d+)|(\d+\.\d*))'
+	FLOAT_NUMBER		 = r'(' + INT_NUMBER + '|' + FLOAT + ')[eE](\+-)?' + INT_NUMBER
 	STRING_QUOTE		 = r'\'([^\'\\\n]|(\\.))*\''
 	STRING_DOUBLE_QUOTE	 = r'"([^"\\\n]|(\\.))*"'
 	CMD					 = r'`.+`'
@@ -307,11 +307,6 @@ class Lexer():
 	def t_FLOAT_NUMBER(self, t):
 		return t
 	
-	# Regla para notacion cientifica
-	@TOKEN(SCIENTIFIC)
-	def t_SCIENTIFIC(self, t):
-		return t
-	
 	# Regla para enteros
 	@TOKEN(INT_NUMBER)
 	def t_INT_NUMBER(self, t):
@@ -403,6 +398,7 @@ class Lexer():
 			return t	
 		else:
 			self.comment.value += '<' + t.value + '>'
+			Msg.error(self.parser, 'LABEL_UNKNOWN_IGNORE', Position(line=t.line, lexpos=t.lexpos), label=t.value)
 		
 	# Regla que incluye las etiquetes de los tamaños para arrays
 	@TOKEN(LABEL_SIZE)

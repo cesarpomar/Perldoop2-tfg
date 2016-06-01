@@ -37,9 +37,9 @@ class Functions():
 
     def p_function_print(self, p):
         '''function_call : PRINT LPAREN list RPAREN
-                        |  PRINT expression %prec UNITARY
+                        |  PRINT expression %prec FUNCTION
                         |  SAY LPAREN list RPAREN
-                        |  SAY expression %prec UNITARY '''
+                        |  SAY expression %prec FUNCTION '''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -136,9 +136,9 @@ class Functions():
         
     def p_function_keys_values(self, p):
         '''function_call : KEYS LPAREN list RPAREN
-                        |  KEYS expression %prec UNITARY
+                        |  KEYS expression %prec FUNCTION
                         |  VALUES LPAREN list RPAREN
-                        |  VALUES expression %prec UNITARY'''
+                        |  VALUES expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -168,9 +168,9 @@ class Functions():
         
     def p_function_chomp(self, p):
         '''function_call : CHOMP LPAREN list RPAREN
-                        |  CHOMP expression %prec UNITARY
+                        |  CHOMP expression %prec FUNCTION
                         |  CHOP LPAREN list RPAREN
-                        |  CHOP expression %prec UNITARY'''
+                        |  CHOP expression %prec FUNCTION'''
         # Aprovechamos la misma definicion ya que las funciones on casi identicas
         if p[1] == 'chomp':
             rtype = [Dtp.INTEGER]
@@ -258,7 +258,7 @@ class Functions():
         
     def p_function_defined(self, p):
         '''function_call : DEFINED LPAREN list RPAREN
-                        |  DEFINED expression %prec UNITARY'''
+                        |  DEFINED expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -306,7 +306,7 @@ class Functions():
              
     def p_function_close(self, p):
         '''function_call : CLOSE LPAREN list RPAREN
-                        | CLOSE expression %prec UNITARY'''
+                        | CLOSE expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -349,7 +349,7 @@ class Functions():
 
     def p_function_sort_custom(self, p):
         '''function_call : sort_head LBRACE expression RBRACE LPAREN list RPAREN
-                        | sort_head LBRACE expression RBRACE expression %prec UNITARY'''
+                        | sort_head LBRACE expression RBRACE expression %prec FUNCTION'''
         # Variables
         cmp = p[3]
         if len(p) == 8:
@@ -412,13 +412,13 @@ class Functions():
         
     def p_function_upper_lower(self, p):
         '''function_call : LC LPAREN list RPAREN
-                        | LC expression %prec UNITARY
+                        | LC expression %prec FUNCTION
                         | LCFIRST  LPAREN list RPAREN
-                        | LCFIRST  expression %prec UNITARY
+                        | LCFIRST  expression %prec FUNCTION
                         | UC LPAREN list RPAREN
-                        | UC expression %prec UNITARY
+                        | UC expression %prec FUNCTION
                         | UCFIRST  LPAREN list RPAREN
-                        | UCFIRST  expression %prec UNITARY'''
+                        | UCFIRST  expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -439,7 +439,7 @@ class Functions():
         
     def p_function_die(self, p):
         '''function_call : DIE LPAREN list RPAREN
-                        | DIE expression %prec UNITARY'''
+                        | DIE expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -460,7 +460,7 @@ class Functions():
            
     def p_function_delete(self, p):
         '''function_call : DELETE LPAREN list RPAREN
-                        | DELETE expression %prec UNITARY'''
+                        | DELETE expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -487,7 +487,7 @@ class Functions():
         
     def p_function_exists(self, p):
         '''function_call : EXISTS LPAREN list RPAREN
-                        | EXISTS expression %prec UNITARY'''
+                        | EXISTS expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -508,7 +508,7 @@ class Functions():
         
     def p_function_exit(self, p):
         '''function_call : EXIT LPAREN list RPAREN
-                        | EXIT expression %prec UNITARY'''
+                        | EXIT expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -529,9 +529,9 @@ class Functions():
         
     def p_function_length_system(self, p):
         '''function_call : LENGTH LPAREN list RPAREN
-                        |  LENGTH expression %prec UNITARY
+                        |  LENGTH expression %prec FUNCTION
                         |  SYSTEM LPAREN list RPAREN
-                        |  SYSTEM expression %prec UNITARY'''
+                        |  SYSTEM expression %prec FUNCTION'''
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -694,9 +694,9 @@ class Functions():
         
     def p_function_pop_shirft(self, p):
         '''function_call : POP LPAREN list RPAREN
-                        |  POP expression %prec UNITARY
+                        |  POP expression %prec FUNCTION
                         |  SHIRFT LPAREN list RPAREN
-                        |  SHIRFT expression %prec UNITARY''' 
+                        |  SHIRFT expression %prec FUNCTION''' 
         # Variables
         if len(p) == 5:
             list = p[3]

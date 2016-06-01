@@ -9,6 +9,7 @@ class Messages:
 	# Errores que no generan codigo erroneo
 	not_fatal = {
 	'VAR_FOR_TYPED',
+	'LABEL_UNKNOWN_IGNORE',
 	}
 	
 	# Definicion de los idiomas
@@ -39,6 +40,7 @@ class Messages:
 	'WARNING':'Aviso',
 	'FILE_NOT_FOUND':'Archivo %file no encontrado o no ha sido posible acceder a Ã©l.',
 	'ILEGAL_TOKEN':'El caracter %c no estÃ¡ permitido',
+	'LABEL_UNKNOWN_IGNORE':'La etiqueta %label ha sido ignorada.',
 	'SYNTAX_ERROR_TOKEN':'No se esperaba el componente %type "%token".',
 	'SYNTAX_ERROR_EOF':'Error sintactico, final de fichero inexperado.',
 	'VAR_NOT_DECLARE':'La variable "%var" tiene definido un tipo pero no ha sido declarada.',
@@ -85,6 +87,7 @@ class Messages:
 	'FILE_ARRAY_ERROR':'No puedes leer todo un fichero en algo que no sea un array o una lista de Strings.',
 	'FILE_STRING_ERROR':'No puedes leer un fichero en una variable que no es un String.',
 	'NOT_FILE':'La variable "%var" no es un fichero.',
+	'NOT_STRING_CONCAT':'El operador . debe estar precedido por una cadena',
 	# Errores Funciones
 	'EACH_ERROR':'La funcion each necesita dos variables a la izquierda y un hash a la derecha.',
 	'SORT_TYPE_A_ERROR':'La funcion sort necesita la declaracion de tipo de a.',

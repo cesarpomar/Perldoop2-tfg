@@ -89,6 +89,9 @@ class Operations:
         # Comprobamos las expresiones
         Aux.check_code(parser, exp1)
         Aux.check_code(parser, exp2)
+        # Comprobamos si se aplica sobre un string
+        if exp1.type[0] != Dtp.STRING:
+            Msg.error(parser, 'NOT_STRING_CONCAT', op.pos)
         # Perl ya obliga a que el primer operador sea string y el resto al igual que en java no importa
         code.type = [Dtp.STRING]
         code.value = exp1.value + ' + ' + exp2.value

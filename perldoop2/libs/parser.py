@@ -51,6 +51,7 @@ class Parser(Options, Functions, Hadoop):
 		('left', 'LLNOT'),
 		# nonassoc list operators (rightward),
 		('left', 'COMMA'),
+		('left', 'FUNCTION'),
 		('right', 'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
 		'LSHIFTEQUAL', 'RSHIFTEQUAL', 'ANDEQUAL', 'OREQUAL', 'XOREQUAL', 'POWEQUAL',
 		'LANDEQUAL', 'LOREQUAL', 'PERIODEQUAL', 'XEQUAL'),
@@ -791,7 +792,7 @@ class Parser(Options, Functions, Hadoop):
 		p[0] = Sts.function_call(self, p[1], Position(p, 4), p[3])
 		
 	def p_function_call_exp(self, p):
-		'function_call : ID expression %prec UNITARY'
+		'function_call : ID expression %prec FUNCTION'
 		p[0] = Sts.function_call(self, p[1], p[2].pos, [p[2]])
 		
 	def p_function_call_empty(self, p):
@@ -807,11 +808,11 @@ class Parser(Options, Functions, Hadoop):
 		p[0] = Sts.function_call(self, p[2], Position(p, 5), p[4], package=p[1])
 		
 	def p_function_call_pack_exp(self, p):
-		'function_call : package ID expression %prec UNITARY'
+		'function_call : package ID expression %prec FUNCTION'
 		p[0] = Sts.function_call(self, p[2], p[3].pos, [p[3]], package=p[1])
 		
 	def p_function_call_pack_empty(self, p):
-		'function_call : package ID %prec UNITARY'
+		'function_call : package ID %prec FUNCTION'
 		p[0] = Sts.function_call(self, p[2], Position(p, 2), package=p[1])
 		
 	### Package ###	

@@ -22,4 +22,4 @@ def create_var(parser, name, type=None):
     context_var = parser.variables[-1]
     entry = Variable(name=name, type=type)
     context_var[name] = entry 
-    
+         

@@ -116,7 +116,7 @@ class Auxiliary:
 			# Creamos la sentencia de declaracion
 			if var.type:
 				# Si tiene tipo lo usamos
-				value += Aux.create_type(var.type) + ' ' + var.value + ';\n'
+				value += Cst.create_type(var.type) + ' ' + var.value + ';\n'
 			else:
 				# Si no asumimos que ya forma parte de la codena
 				value += var.value + ';\n'					
@@ -142,10 +142,10 @@ class Auxiliary:
 	# Declara un paquete
 	@classmethod
 	def declare_package(Aux, parser, name, pos):
-		if parser.atributes or parser.functions:
-			Msg.error(parser, 'PACK_DIF_NAME', pos)
-		elif parser.class_name != name:
+		if parser.atributes or parser.functions or parser.global_code or parser.package_code:
 			Msg.error(parser, 'PACK_AFTER_CODE', pos)
+		elif parser.class_name != name:
+			Msg.error(parser, 'PACK_DIF_NAME', pos)
 		else:
 			parser.is_package = True
 	

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import unittest
-import parser.parserUtils as ParserUtils
+from parser import parserUtils as ParserUtils
 from libs import Parser
 from libs import DataType as Dtp
 
