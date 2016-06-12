@@ -264,7 +264,7 @@ class Lexer():
 	t_BACKSLASH			 = r'\\'
 	t_POINTED			 = r'->'
 	
-	# Expresiones regualres
+	# Expresiones regualares
 	REGEX_MOD			 = '(i|s|m|x|o|p|d|a|u|l|g|cg|e)?'
 	M_REGEX				 = r'm/.*/' + REGEX_MOD
 	S_REGEX				 = r's/.*/.*/' + REGEX_MOD
@@ -398,7 +398,7 @@ class Lexer():
 			return t	
 		else:
 			self.comment.value += '<' + t.value + '>'
-			Msg.error(self.parser, 'LABEL_UNKNOWN_IGNORE', Position(line=t.line, lexpos=t.lexpos), label=t.value)
+			Msg.error(self.parser, 'LABEL_UNKNOWN_IGNORE', Position(line=t.lineno, lexpos=t.lexpos), label=t.value)
 		
 	# Regla que incluye las etiquetes de los tamaños para arrays
 	@TOKEN(LABEL_SIZE)
