@@ -43,8 +43,7 @@ class Lexer():
 	def t_ANY_error(self, t):
 		Msg.error(self.parser, 'ILEGAL_TOKEN', Position(line=t.lineno, lexpos=t.lexpos), c=t.value[0])
 		t.lexer.skip(1)
-		
-		#############################33  REVISADO ##################
+
 	
 	# #
 	# # Palabras reservadas
@@ -75,9 +74,9 @@ class Lexer():
 	reserved_map['or'] = 'LLOR' 
 	reserved_map['xor'] = 'LLXOR' 
 	reserved_map['not'] = 'LLNOT' 
-	reserved_map['le'] = 'STR_LT'
+	reserved_map['le'] = 'STR_LE'
 	reserved_map['gt'] = 'STR_GT'
-	reserved_map['lt'] = 'STR_LE'
+	reserved_map['lt'] = 'STR_LT'
 	reserved_map['ge'] = 'STR_GE'
 	reserved_map['eq'] = 'STR_EQ'
 	reserved_map['ne'] = 'RSTR_NE'
