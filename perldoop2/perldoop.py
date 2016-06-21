@@ -67,16 +67,16 @@ def analyzer(files, args, output, main=False):
 			# Identamos el codigo
 			java = Aux.identer(java)
 			# Escribimos el codigo
-			output = open(os.path.join(output, parser.class_name + '.java'), 'w')
-			output.write(java)
-			output.close()
+			file = open(os.path.join(output, parser.class_name + '.java'), 'w')
+			file.write(java)
+			file.close()
 	
 
 if __name__ == '__main__':
 	# Opciones del analizador
 	argp = argparse.ArgumentParser(description=Msg.get_message('HELP_TOOL_DESCRIPTION'))
 	argp.add_argument('files', nargs='+', action='store', metavar='infile'  , help=Msg.get_message('HELP_FILES'))
-	argp.add_argument('-m', '-main', action='store_true', dest='main', help=Msg.get_message('HELP_MAIN'))
+	argp.add_argument('-m', '--main', action='store_true', dest='main', help=Msg.get_message('HELP_MAIN'))
 	argp.add_argument('-out', action='store', dest='out', default=os.getcwd(), metavar='dir', help=Msg.get_message('HELP_OUT'))
 	argp.add_argument('-c', '--comments', action='store_true', dest='read_comments', help=Msg.get_message('HELP_COMMENTS'))
 	argp.add_argument('-ep', '--emulate-parens', action='store_true', dest='emulate_parens', help=Msg.get_message('HELP_EMULATE_PAREN'))

@@ -294,7 +294,6 @@ class Functions():
             Msg.error(self, 'NOT_FILE', list[0].pos, var=list[0].value)
             p[0] = Code(type=[Dtp.NONE])  
             return
-        Aux.check_code(self, list[0])
         # declaraciones
         declares = list[0].declares + list[1].declares + list[2].declares
         # crear descriptor si no existe, creamos uno

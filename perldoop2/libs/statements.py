@@ -287,8 +287,8 @@ class Statements:
         # Si el contenedor es una coleccion
         if len(var.type) > 1:
             # Esta debe ser un array o una lista de Strings
-            if len(var.type) != 2 or var.type[0] == Dtp.STRING or var.type[1] not in (Dtp.ARRAY, Dtp.LIST):
-                Msg.error(parser, 'FILE_Dtp.ARRAY_ERROR', var.pos)
+            if len(var.type) != 2 or var.type[1] != Dtp.STRING or var.type[0] not in (Dtp.ARRAY, Dtp.LIST):
+                Msg.error(parser, 'FILE_ARRAY_ERROR', var.pos)
             # Cambiamos el tipo a array de String
             code.type = [Dtp.ARRAY, Dtp.STRING]
             # Usamos la funcion de lectura
@@ -312,7 +312,7 @@ class Statements:
         if len(var.type) > 1:
             # Esta debe ser un array o una lista de Strings
             if len(var.type) != 2 or var.type[0] == Dtp.STRING or var.type[1] not in (Dtp.ARRAY, Dtp.LIST):
-                Msg.error(parser, 'FILE_Dtp.ARRAY_ERROR', var.pos)
+                Msg.error(parser, 'FILE_ARRAY_ERROR', var.pos)
             return Sts.equals(parser, var, Code(type=[Dtp.ARRAY, Dtp.STRING], value='Pd.readLines()'))
         else:
             # Esta debe ser un String
