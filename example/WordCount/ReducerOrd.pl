@@ -5,11 +5,11 @@
 #<reducer_code><string><string><string><string>
 {
 	#<reducer_var>
-	my $newKey;			#<string><reducer_key>
 	my $value;			#<string><reducer_value>
 	my $count=0;		#<integer>
-	#<reducer_var>
-	my $oldkey=undef;	#<string>
+	my $oldkey=undef;	#<string><reducer_key>
+	#<reducer_var>	
+	my $newKey;			#<string>
 	my $line;			#<string>
 
 	while ($line = <STDIN>) {
@@ -25,7 +25,7 @@
 				$count = $count + $value;
 			}
 		}else{
-			print ($oldkey,'\t',$count,'\n');#<reducer_print>
+			print ($oldkey,'\t',$count,'\n');
 			
 			$oldkey = $newKey;
 			$count  = $value;
@@ -33,7 +33,8 @@
 	}
 	#<reducer_change>
 	{
-		print ($oldkey,'\t',$count,'\n');#<reducer_print>
+		#<hadoop_print>
+		print ($oldkey,'\t',$count,'\n');
 	}
 
 }

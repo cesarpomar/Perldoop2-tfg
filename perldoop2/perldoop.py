@@ -9,7 +9,6 @@ from libs import Auxiliary as Aux
 from libs import Messages as Msg
 
 
-# sys.argv=[sys.argv[0],"-out","D:\\",'-m','-oc','D:\\manual\\MultiAsignacion.pl',]
 # sys.argv=[sys.argv[0],"-h"]
 
 def analyzer(files, args, output, main=False):

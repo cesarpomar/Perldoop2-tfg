@@ -7,12 +7,12 @@
 	#Acotar las variables que se usan en las regiones reducer_op y reducer_change
 	#<reducer_var>
 	#Indicar variable clave
-	my $newKey;			#<string><reducer_key>
+	my $oldkey=undef;	#<string><reducer_key>
 	#Indicar variable valor
 	my $value;			#<string><reducer_value>
 	my $count=0;		#<integer>
 	#<reducer_var>
-	my $oldkey=undef;	#<string>
+	my $newKey;			#<string>
 	my $line;			#<string>
 	my %unorder=();		#<hash><array><string>
 

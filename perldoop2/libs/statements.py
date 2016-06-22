@@ -235,6 +235,7 @@ class Statements:
             Msg.error(parser, 'VAR_REQUIRES', var.pos) 
         # Si no es una coleccion la igualamos a null
         if var.type[0] not in [Dtp.ARRAY, Dtp.HASH, Dtp.LIST]:
+            parser.assigns[-1][var.value] = True
             return Sts.equals(parser, var, Code(type=var.type, value='null'))    
         # Obtenermos una referencia directa a la variable
         variable = var.var.variable

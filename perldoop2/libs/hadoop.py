@@ -29,7 +29,6 @@ class Hadoop():
         self.mapper_loop = False  # Existe un loop mapper
         self.reducer_op = None  # Codigo para reduccion
         self.reducer_change = None  # Codigo para cada clave
-        self.reducer_vars = None  # Clave del reducer
         self.reducer_key = None  # Clave del reducer
         self.reducer_value = None  # Value actual del reducer
     
@@ -82,7 +81,7 @@ class Hadoop():
         # Cogemos el valor del mapper  
         code = Sts.equals(self, p[4], Code(type=[self.hd_types[self.hadoop_type[1]]], value='pd_value.get()'))    
         # Podemos las declaraciones del codigo
-        code.value = '{\n' + Aux.create_declare(code) + code.value + '}\n'
+        code.value = Aux.create_declare(code) + code.value
         # Las borramos
         code.declares = []
         p[0] = code 
@@ -97,7 +96,7 @@ class Hadoop():
         self.variables.pop()
         # Unimos las sentencias de la cabeceracon las del bloque
         p[0] = p[1]
-        p[0].value += p[3].value
+        p[0].value = '{\n' + p[0].value + p[3].value + '}\n'
         
     def p_hadoop_print(self, p):
         'function_call : HADOOP_PRINT PRINT LPAREN list RPAREN'
@@ -109,7 +108,7 @@ class Hadoop():
             # Creamos el codigo
             p[0] = list[0] + list[2]
             p[0].type = [Dtp.INTEGER]
-            p[0].value = 'pd_context.write(new ' + self.hd_types[self.hadoop_type[2]] + '(' + Cst.to_type(self, Code(type=[self.hadoop_type[2]]), list[0])
+            p[0].value = 'pd_context.write(new ' + self.hd_types[self.hadoop_type[2]] + '(' + Cst.to_type(self, Code(type=[self.hadoop_type[2]]), list[0]) + ')'
             p[0].value += ', new ' + self.hd_types[self.hadoop_type[3]] + '(' + Cst.to_type(self, Code(type=[self.hadoop_type[3]]), list[2]) + '))'
             p[0].st_value = p[0].value
         else:
@@ -140,8 +139,8 @@ class Hadoop():
         'statement_type : labels_line list post_block SEMI REDUCER_KEY line_comment '
         # Variable key
         if p[2][0].declares:
-            # Cogemos la declaracion
-            self.reducer_key = p[2][0].declares[0]
+            var = p[2][0].declares[0] 
+            self.reducer_key = Code(value = var.variable.name, type = var.type)
             # Si no ha sido inicializada, lo hacemos con null
             if not self.reducer_key.value in self.assigns[-1]:
                 self.assigns[-1][self.reducer_key.value] = True
@@ -155,11 +154,12 @@ class Hadoop():
         'statement_type : labels_line list post_block SEMI REDUCER_VALUE line_comment '  
         # Variable value
         if p[2][0].declares:
-            self.reducer_value = p[2][0].declares[0] 
+            var = p[2][0].declares[0] 
+            self.reducer_value = Code(value = var.variable.name, type = var.type)
             # Si no ha sido inicializada, lo hacemos con null  
             if not self.reducer_value.value in self.assigns[-1]:
                 self.assigns[-1][self.reducer_value.value] = True
-                p[2][0].declares[0] = Code(value=self.reducer_value.value + ' = null', type=self.reducer_key.type)
+                p[2][0].declares[0] = Code(value=self.reducer_value.value + ' = null', type=self.reducer_value.type)
         else:
             Msg.error(self, 'HD_REDUCER_VALUE', Position(p, 5))  
         p[0] = Sts.create_statement(self, p[2], p[3], p[6], Position(p, 4))  
@@ -168,8 +168,8 @@ class Hadoop():
         'block : reducer_init LBRACE block_header REDUCER_VAR statements REDUCER_VAR statements RBRACE'
         self.imports['HadoopTypes'] = True
         # Genera el reducer con la union de los bloques
-        if not(self.reducer_op and self.reducer_change and self.reducer_key and self.reducer_value) and self.reducer_vars:
-            Msg.error(self, 'HD_REDUCER_INCOMPLETE', Position(p, 1)) 
+        if not(self.reducer_op and self.reducer_change and self.reducer_key and self.reducer_value):
+            Msg.error(self, 'HD_REDUCER_INCOMPLETE', Position(p, 4)) 
             p[0] = Code()
             return
         if self.extend_class:
@@ -188,10 +188,9 @@ class Hadoop():
         body += self.reducer_key.value + ' = ' + Cst.to_type(self, self.reducer_key, Code(type=[self.hadoop_type[0]], value='pd_key.get()')) + ';\n'
         # pedimos una variable auxiliar
         aux = Var.get_loop_var(self)
-        body += self.hd_types[self.hadoop_type[1]] + ' ' + aux + ';\n'
-        body += 'for(' + aux + ':pd_value){\n'
+        body += 'for(' + self.hd_types[self.hadoop_type[1]] + ' ' + aux + ' : pd_value){\n'
         # Igualamos el valor al del reduce
-        body += self.reducer_value.value + ' = ' + Cst.to_type(self, self.reducer_value, Code(type=[self.hadoop_type[1]], value='pd_value.get()')) + ';\n'
+        body += self.reducer_value.value + ' = ' + Cst.to_type(self, self.reducer_value, Code(type=[self.hadoop_type[1]], value=aux+'.get()')) + ';\n'
         body += self.reducer_op.value + '}\n'
         body += self.reducer_change.value
         # Creamos la funcion
