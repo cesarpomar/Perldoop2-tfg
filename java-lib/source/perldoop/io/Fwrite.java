@@ -1,4 +1,4 @@
-package perldoop.IO;
+package perldoop.io;
 
 import java.io.BufferedWriter;
 import java.io.Closeable;
@@ -33,6 +33,7 @@ public class Fwrite implements Closeable {
     /**
      * Cierra el fichero de escritura
      */
+    @Override
     public void close() throws IOException {
         buffer.close();
         file.close();

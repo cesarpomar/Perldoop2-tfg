@@ -1,4 +1,4 @@
-package perldoop.IO;
+package perldoop.io;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -32,6 +32,7 @@ public class Fread implements Closeable{
     /**
      * Cierra el fichero de escritura
      */
+    @Override
     public void close() throws IOException {
             buffer.close();
     }
