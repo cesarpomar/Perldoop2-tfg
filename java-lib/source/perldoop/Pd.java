@@ -3,6 +3,7 @@ package perldoop;
 import java.io.BufferedReader;
 import java.io.FileDescriptor;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,7 +14,7 @@ import perldoop.util.Sequence;
 /**
  * Clase para imitar comportamientos nativos de perl
  *
- * @author César
+ * @author César Pomar
  */
 public class Pd {
 
@@ -285,8 +286,8 @@ public class Pd {
      * @return Array del rango
      */
     public static Integer[] range(Integer init, Integer end) {
-        int tam = end - init;
-        if (end * init <= 0) {//Numero 0
+        int tam = end - init + 1;
+        if (end * init < 0) {//Numero 0
             tam++;
         }
         if (tam > 0) {
@@ -313,8 +314,8 @@ public class Pd {
         if (init.matches(rex) && end.matches(rex)) {
             int initN = Integer.parseInt(init);
             int endN = Integer.parseInt(end);
-            int tam = endN - initN;
-            if (endN * initN <= 0) {
+            int tam = endN - initN + 1;
+            if (endN * initN < 0) {
                 tam++;
             }
             if (tam > 0) {
@@ -520,7 +521,7 @@ public class Pd {
             exec.waitFor();
             Scanner s = new Scanner(exec.getInputStream()).useDelimiter("\\A");
             return s.hasNext() ? s.next() : "";
-        } catch (Exception ex) {
+        } catch (IOException | InterruptedException ex) {
             return "";
         }
     }

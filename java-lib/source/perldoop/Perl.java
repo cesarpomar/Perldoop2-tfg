@@ -1,8 +1,8 @@
 package perldoop;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Clase para las funciones definidas en Perl
  *
- * @author César
+ * @author César Pomar
  */
 public class Perl {
 
@@ -59,8 +59,9 @@ public class Perl {
      */
     public static String chop(Ref<String> cad) {
         int pos = cad.get().length() - 1;
+        String c = cad.get().charAt(pos) + "";
         cad.set(cad.get().substring(0, pos));
-        return cad.get().charAt(pos) + "";
+        return c;
     }
 
     /**
@@ -83,7 +84,7 @@ public class Perl {
     public static Integer chomp(Ref<String> cad) {
         int len = cad.get().length();
         cad.set(cad.get().trim());
-        return cad.get().length() - len;
+        return len - cad.get().length();
     }
 
     /**
@@ -129,7 +130,7 @@ public class Perl {
         try {
             Process exec = Runtime.getRuntime().exec(cmd);
             return exec.waitFor();
-        } catch (Exception ex) {
+        } catch (IOException | InterruptedException ex) {
             return -1;
         }
     }
@@ -157,34 +158,6 @@ public class Perl {
     }
 
     /**
-     * Ordena una lista de forma personalizada
-     *
-     * @param <T> Tipo de la Lista
-     * @param list Lista
-     * @param comp Comparador para ordenar
-     * @return Lista ordenada
-     */
-    public static <T> List<T> sort(List<T> list, Comparator<T> comp) {
-        list = Pd.copy(list);
-        Collections.sort(Pd.copy(list), comp);
-        return list;
-    }
-
-    /**
-     * Ordena un array de forma personalizada
-     *
-     * @param <T> Tipo del Array
-     * @param array Array
-     * @param comp Comparador para ordenar
-     * @return Array ordenado
-     */
-    public static <T> T[] sort(T[] array, Comparator<T> comp) {
-        array = Pd.copy(array);
-        Arrays.sort(array, comp);
-        return array;
-    }
-
-    /**
      * Ordena una lista
      *
      * @param <T> Tipo de la Lista
@@ -207,6 +180,34 @@ public class Perl {
     public static <T extends Comparable> T[] sort(T[] array) {
         array = Pd.copy(array);
         Arrays.sort(array);
+        return array;
+    }
+
+    /**
+     * Ordena una lista de forma personalizada
+     *
+     * @param <T> Tipo de la Lista
+     * @param list Lista
+     * @param comp Comparador para ordenar
+     * @return Lista ordenada
+     */
+    public static <T> List<T> sort(List<T> list, Comparator<T> comp) {
+        list = Pd.copy(list);
+        Collections.sort(list, comp);
+        return list;
+    }
+
+    /**
+     * Ordena un array de forma personalizada
+     *
+     * @param <T> Tipo del Array
+     * @param array Array
+     * @param comp Comparador para ordenar
+     * @return Array ordenado
+     */
+    public static <T> T[] sort(T[] array, Comparator<T> comp) {
+        array = Pd.copy(array);
+        Arrays.sort(array, comp);
         return array;
     }
 
@@ -307,25 +308,27 @@ public class Perl {
     }
 
     /**
-     * Retorna un array con las claves de un hashmap
+     * Retorna un array con las claves de un map
      *
-     * @param hash Hashmap
+     * @param <T> Tipo valores
+     * @param hash Map
      * @return Array de claves
      */
-    public static String[] keys(Map<String, Object> hash) {
+    public static <T> String[] keys(Map<String, T> hash) {
         return hash.keySet().toArray(new String[0]);
     }
 
     /**
-     * Retorna un array con los valores de un hashmap
+     * Retorna un array con los valores de un map
      *
-     * @param hash Hashmap
+     * @param <T> Tipo valores
+     * @param hash Map
      * @return Array de valores
      */
-    public static <T> T[] values(Map<String, T> hash) {
-        Collection<T> values = hash.values();
-        T[] array = (T[]) Array.newInstance(values.getClass(), 0);
-        return values.toArray(array);
+    public static <T> List<T> values(Map<String, T> hash) {
+        List<T> l = new PerlList<>(hash.size());
+        hash.values().forEach(l::add);
+        return l;
     }
 
     /**
@@ -361,7 +364,7 @@ public class Perl {
      */
     public static String substr(Ref<String> string, Integer init, Integer len, String repl) {
         String org = string.get();
-        string.set(string.get().substring(0, init) + repl + string.get().substring(init + len));
+        string.set(org.substring(0, init) + repl + org.substring(init + len));
         return org.substring(init, init + len);
     }
 
@@ -413,7 +416,7 @@ public class Perl {
      */
     public static <T> Integer push(Ref<T[]> array, T elem) {
         int len = array.get().length;
-        T[] result = (T[]) new Object[len + 1];
+        T[] result = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len + 1);
         System.arraycopy(array.get(), 0, result, 0, len);
         result[len] = elem;
         array.set(result);
@@ -430,7 +433,7 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] push(T[] array, T elem) {
-        T[] result = (T[]) new Object[array.length + 1];
+        T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length + 1);
         System.arraycopy(array, 0, result, 0, array.length);
         result[array.length] = elem;
         return result;
@@ -458,8 +461,11 @@ public class Perl {
      * @return Numero de elementos añadidos
      */
     public static <T> Integer push(Ref<T[]> array, T[] elem) {
+        if (elem.length == 0) {
+            return 0;
+        }
         int len = array.get().length;
-        T[] result = (T[]) new Object[len + elem.length];
+        T[] result = (T[]) Array.newInstance(elem.getClass().getComponentType(), len + elem.length);
         System.arraycopy(array.get(), 0, result, 0, len);
         System.arraycopy(elem, 0, result, len, elem.length);
         array.set(result);
@@ -476,7 +482,10 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] push(T[] array, T[] elem) {
-        T[] result = (T[]) new Object[array.length + elem.length];
+        if (elem.length == 0) {
+            return array;
+        }
+        T[] result = (T[]) Array.newInstance(elem.getClass().getComponentType(), array.length + elem.length);
         System.arraycopy(array, 0, result, 0, array.length);
         System.arraycopy(elem, 0, result, array.length, elem.length);
         return result;
@@ -505,12 +514,12 @@ public class Perl {
      */
     public static <T> Integer push(Ref<T[]> array, List<T> elem) {
         int len = array.get().length;
-        T[] result = (T[]) new Object[len + elem.size()];
+        T[] result = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len + elem.size());
         System.arraycopy(array.get(), 0, result, 0, len);
-        elem.forEach((e) -> {
-            int p = len;
+        int p = len;
+        for (T e : elem) {
             result[p++] = e;
-        });
+        }
         array.set(result);
         return elem.size();
     }
@@ -525,12 +534,15 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] push(T[] array, List<T> elem) {
-        T[] result = (T[]) new Object[array.length + elem.size()];
+        if (elem.isEmpty()) {
+            return array;
+        }
+        T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length + elem.size());
         System.arraycopy(array, 0, result, 0, array.length);
-        elem.forEach((e) -> {
-            int p = array.length;
+        int p = array.length;
+        for (T e : elem) {
             result[p++] = e;
-        });
+        }
         return result;
     }
 
@@ -544,6 +556,159 @@ public class Perl {
      */
     public static <T> Integer push(List<T> list, List<T> elem) {
         list.addAll(elem);
+        return elem.size();
+    }
+
+    /**
+     * Añade un elemento a un array por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Referencia al Array
+     * @param elem Elemento a añadir
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(Ref<T[]> array, T elem) {
+        int len = array.get().length;
+        T[] result = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len + 1);
+        System.arraycopy(array.get(), 0, result, 1, len);
+        result[0] = elem;
+        array.set(result);
+        return 1;
+    }
+
+    /**
+     * Añade un elemento a un array por delante, en este caso ese elemento no se
+     * lee y se usa el retorno para actualizar el array
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Array
+     * @param elem Elemento a añadir
+     * @return Array actualizado
+     */
+    public static <T> T[] unshift(T[] array, T elem) {
+        T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length + 1);
+        System.arraycopy(array, 0, result, 1, array.length);
+        result[0] = elem;
+        return result;
+    }
+
+    /**
+     * Añade un elemento a una lista por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param list Lista
+     * @param elem Elemento a añadir
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(List<T> list, T elem) {
+        list.add(0, elem);
+        return 1;
+    }
+
+    /**
+     * Concatena dos arrays por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Referencia al Array 1
+     * @param elem Array 2
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(Ref<T[]> array, T[] elem) {
+        if (elem.length == 0) {
+            return 0;
+        }
+        int len = array.get().length;
+        T[] result = (T[]) Array.newInstance(elem.getClass().getComponentType(), len + elem.length);
+        System.arraycopy(array.get(), 0, result, elem.length, len);
+        System.arraycopy(elem, 0, result, 0, elem.length);
+        array.set(result);
+        return elem.length;
+    }
+
+    /**
+     * Concatena dos arrays por delante, en este caso ese elemento no se lee y
+     * se usa el retorno para actualizar el array
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Array 1
+     * @param elem Array 2
+     * @return Array actualizado
+     */
+    public static <T> T[] unshift(T[] array, T[] elem) {
+        if (elem.length == 0) {
+            return array;
+        }
+        T[] result = (T[]) Array.newInstance(elem.getClass().getComponentType(), array.length + elem.length);
+        System.arraycopy(array, 0, result, elem.length, array.length);
+        System.arraycopy(elem, 0, result, 0, elem.length);
+        return result;
+    }
+
+    /**
+     * Concatena un array a una lista por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param list Lista
+     * @param elem Array
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(List<T> list, T[] elem) {
+        list.addAll(0, Arrays.asList(elem));
+        return elem.length;
+    }
+
+    /**
+     * Concatena una lista a un array por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Referencia al Array
+     * @param elem Lista
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(Ref<T[]> array, List<T> elem) {
+        int len = array.get().length;
+        T[] result = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len + elem.size());
+        System.arraycopy(array.get(), 0, result, elem.size(), len);
+        int p = 0;
+        for (T e : elem) {
+            result[p++] = e;
+        }
+        array.set(result);
+        return elem.size();
+    }
+
+    /**
+     * Concatena una lista a un array por delante, en este caso ese elemento no
+     * se lee y se usa el retorno para actualizar el array
+     *
+     * @param <T> Tipo de la coleccion
+     * @param array Array
+     * @param elem Lista
+     * @return Array actualizado
+     */
+    public static <T> T[] unshift(T[] array, List<T> elem) {
+        if (elem.isEmpty()) {
+            return array;
+        }
+        T[] result = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length + elem.size());
+        System.arraycopy(array, 0, result, elem.size(), array.length);
+        int p = 0;
+        for (T e : elem) {
+            result[p++] = e;
+        }
+        return result;
+    }
+
+    /**
+     * Concatena dos listas por delante
+     *
+     * @param <T> Tipo de la coleccion
+     * @param list Lista 1
+     * @param elem Lista 2
+     * @return Numero de elementos añadidos
+     */
+    public static <T> Integer unshift(List<T> list, List<T> elem) {
+        list.addAll(0, elem);
         return elem.size();
     }
 
@@ -568,7 +733,7 @@ public class Perl {
     public static <T> T shift(Ref<T[]> array) {
         int len = array.get().length - 1;
         T[] src = array.get();
-        T[] copia = (T[]) new Object[len];
+        T[] copia = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len);
         System.arraycopy(src, 1, copia, 0, len);
         array.set(copia);
         return src[0];
@@ -583,7 +748,7 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] shift(T[] array) {
-        T[] copia = (T[]) new Object[array.length - 1];
+        T[] copia = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length - 1);
         System.arraycopy(array, 1, copia, 0, array.length - 1);
         return copia;
     }
@@ -607,12 +772,12 @@ public class Perl {
      * @return Caracter eliminado de la primera posicion
      */
     public static <T> T pop(Ref<T[]> array) {
-        int len = array.get().length - 1;
+        int len = array.get().length;
         T[] src = array.get();
-        T[] copia = (T[]) new Object[len];
+        T[] copia = (T[]) Array.newInstance(src.getClass().getComponentType(), len - 1);
         System.arraycopy(src, 0, copia, 0, len - 1);
         array.set(copia);
-        return src[0];
+        return src[len - 1];
     }
 
     /**
@@ -624,7 +789,7 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] pop(T[] array) {
-        T[] copia = (T[]) new Object[array.length - 1];
+        T[] copia = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length - 1);
         System.arraycopy(array, 0, copia, 0, array.length - 1);
         return copia;
     }
@@ -638,8 +803,8 @@ public class Perl {
      * @return Segmento eliminado
      */
     public static <T> T[] splice(Ref<T[]> array, Integer init) {
-        T[] cut = (T[]) new Object[array.get().length - init];
-        T[] dest = (T[]) new Object[init];
+        T[] cut = (T[]) Array.newInstance(array.get().getClass().getComponentType(), array.get().length - init);
+        T[] dest = (T[]) Array.newInstance(array.get().getClass().getComponentType(), init);
         System.arraycopy(array.get(), init, cut, 0, array.get().length - init);
         System.arraycopy(array.get(), 0, dest, 0, init);
         array.set(dest);
@@ -656,7 +821,7 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] splice(T[] array, Integer init) {
-        T[] dest = (T[]) new Object[init];
+        T[] dest = (T[]) Array.newInstance(array.getClass().getComponentType(), init);
         System.arraycopy(array, 0, dest, 0, init);
         return dest;
     }
@@ -669,8 +834,14 @@ public class Perl {
      * @param init Inicio
      * @return Segmento eliminado
      */
-    public static <T> T[] splice(List<T> list, Integer init) {
-        return null;
+    public static <T> List<T> splice(List<T> list, Integer init) {
+        List<T> cut = new PerlList<>(list.size());
+        List<T> range = list.subList(init, list.size());
+        for (T e : range) {
+            cut.add(e);
+        }
+        range.clear();
+        return cut;
     }
 
     /**
@@ -683,7 +854,13 @@ public class Perl {
      * @return Segmento eliminado
      */
     public static <T> T[] splice(Ref<T[]> array, Integer init, Integer len) {
-        return null;
+        T[] cut = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len);
+        T[] dest = (T[]) Array.newInstance(array.get().getClass().getComponentType(), array.get().length - len);
+        System.arraycopy(array.get(), init, cut, 0, len);
+        System.arraycopy(array.get(), 0, dest, 0, init);
+        System.arraycopy(array.get(), init + len, dest, init, array.get().length - len - init);
+        array.set(dest);
+        return cut;
     }
 
     /**
@@ -697,7 +874,10 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] splice(T[] array, Integer init, Integer len) {
-        return null;
+        T[] dest = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length - len);
+        System.arraycopy(array, 0, dest, 0, init);
+        System.arraycopy(array, init + len, dest, init, array.length - len - init);
+        return dest;
     }
 
     /**
@@ -709,8 +889,14 @@ public class Perl {
      * @param len tamaño del corte
      * @return Segmento eliminado
      */
-    public static <T> T[] splice(List<T> list, Integer init, Integer len) {
-        return null;
+    public static <T> List<T> splice(List<T> list, Integer init, Integer len) {
+        List<T> cut = new PerlList<>(list.size());
+        List<T> range = list.subList(init, init + len);
+        for (T e : range) {
+            cut.add(e);
+        }
+        range.clear();
+        return cut;
     }
 
     /**
@@ -724,7 +910,14 @@ public class Perl {
      * @return Segmento eliminado
      */
     public static <T> T[] splice(Ref<T[]> array, Integer init, Integer len, T[] repl) {
-        return null;
+        T[] cut = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len);
+        T[] dest = (T[]) Array.newInstance(array.get().getClass().getComponentType(), array.get().length - len + repl.length);
+        System.arraycopy(array.get(), init, cut, 0, len);
+        System.arraycopy(array.get(), 0, dest, 0, init);
+        System.arraycopy(repl, 0, dest, init, repl.length);
+        System.arraycopy(array.get(), init + len, dest, init + repl.length, array.get().length - len - init);
+        array.set(dest);
+        return cut;
     }
 
     /**
@@ -739,7 +932,11 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] splice(T[] array, Integer init, Integer len, T[] repl) {
-        return null;
+        T[] dest = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length - len + repl.length);
+        System.arraycopy(array, 0, dest, 0, init);
+        System.arraycopy(repl, 0, dest, init, repl.length);
+        System.arraycopy(array, init + len, dest, init + repl.length, array.length - len - init);
+        return dest;
     }
 
     /**
@@ -752,8 +949,15 @@ public class Perl {
      * @param repl Segmento de remplazo
      * @return Segmento eliminado
      */
-    public static <T> T[] splice(List<T> list, Integer init, Integer len, T[] repl) {
-        return null;
+    public static <T> List<T> splice(List<T> list, Integer init, Integer len, T[] repl) {
+        List<T> cut = new PerlList<>(list.size());
+        List<T> range = list.subList(init, init + len);
+        for (T e : range) {
+            cut.add(e);
+        }
+        range.clear();
+        list.addAll(init, Arrays.asList(repl));
+        return cut;
     }
 
     /**
@@ -767,7 +971,16 @@ public class Perl {
      * @return Segmento eliminado
      */
     public static <T> T[] splice(Ref<T[]> array, Integer init, Integer len, List<T> repl) {
-        return null;
+        T[] cut = (T[]) Array.newInstance(array.get().getClass().getComponentType(), len);
+        T[] dest = (T[]) Array.newInstance(array.get().getClass().getComponentType(), array.get().length - len + repl.size());
+        System.arraycopy(array.get(), init, cut, 0, len);
+        System.arraycopy(array.get(), 0, dest, 0, init);
+        for(int i=0,j=init,n=0;n<repl.size();i++,j++,n++){
+            dest[j]=repl.get(i);
+        }
+        System.arraycopy(array.get(), init + len, dest, init + repl.size(), array.get().length - len - init);
+        array.set(dest);
+        return cut;
     }
 
     /**
@@ -782,7 +995,13 @@ public class Perl {
      * @return Array actualizado
      */
     public static <T> T[] splice(T[] array, Integer init, Integer len, List<T> repl) {
-        return null;
+        T[] dest = (T[]) Array.newInstance(array.getClass().getComponentType(), array.length - len + repl.size());
+        System.arraycopy(array, 0, dest, 0, init);
+        for(int i=0,j=init,n=0;n<repl.size();i++,j++,n++){
+            dest[j]=repl.get(i);
+        }
+        System.arraycopy(array, init + len, dest, init + repl.size(), array.length - len - init);
+        return dest;
     }
 
     /**
@@ -795,8 +1014,15 @@ public class Perl {
      * @param repl Segmento de remplazo
      * @return Segmento eliminado
      */
-    public static <T> T[] splice(List<T> list, Integer init, Integer len, List<T> repl) {
-        return null;
+    public static <T> List<T> splice(List<T> list, Integer init, Integer len, List<T> repl) {
+        List<T> cut = new PerlList<>(list.size());
+        List<T> range = list.subList(init, init + len);
+        for (T e : range) {
+            cut.add(e);
+        }
+        range.clear();
+        list.addAll(init, repl);
+        return cut;
     }
 
 }

@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 /**
  * Clase para almacenar un fichero de escritura.
  *
- * @author César
+ * @author César Pomar
  */
 public class Fwrite implements Closeable {
 

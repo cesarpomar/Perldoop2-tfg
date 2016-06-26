@@ -5,8 +5,9 @@ import perldoop.io.Fread;
 import perldoop.io.Fwrite;
 
 /**
+ * Clase que representa un fichero en Perl
  *
- * @author César
+ * @author César Pomar
  */
 public class PerlFile {
 

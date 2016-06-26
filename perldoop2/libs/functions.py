@@ -155,7 +155,7 @@ class Functions():
         if p[1] == 'keys':
             rtype = [Dtp.ARRAY, Dtp.STRING]
         else:
-            rtype = [Dtp.ARRAY] + p[3][0].type[1:]
+            rtype = [Dtp.LIST] + p[3][0].type[1:]
         Aux.check_code(self, list[0])
         # Si no es un hash, forzamos un cast para lanzar un error
         if list[0].type[0] != Dtp.HASH:

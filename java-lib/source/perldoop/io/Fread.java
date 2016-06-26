@@ -11,9 +11,9 @@ import java.util.logging.Logger;
 /**
  * Clase para almacenar un fichero de lectura.
  *
- * @author César
+ * @author César Pomar
  */
-public class Fread implements Closeable{
+public class Fread implements Closeable {
 
     private BufferedReader buffer;
     private FileReader file;
@@ -34,7 +34,7 @@ public class Fread implements Closeable{
      */
     @Override
     public void close() throws IOException {
-            buffer.close();
+        buffer.close();
     }
 
     /**
@@ -44,9 +44,9 @@ public class Fread implements Closeable{
      */
     public String read() {
         try {
-            String line=buffer.readLine();
-            if (line!=null){
-               return line+"\n";
+            String line = buffer.readLine();
+            if (line != null) {
+                return line + "\n";
             }
         } catch (IOException ex) {
             Logger.getLogger(Fread.class.getName()).log(Level.SEVERE, null, ex);
@@ -60,7 +60,7 @@ public class Fread implements Closeable{
      * @return array de lineas
      */
     public String[] readLines() {
-        return buffer.lines().map(line->line+"\n").toArray(String[]::new);                
+        return buffer.lines().map(line -> line + "\n").toArray(String[]::new);
     }
 
 }
