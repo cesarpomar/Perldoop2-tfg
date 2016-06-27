@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import argparse
 import sys
@@ -10,6 +10,7 @@ from libs import Messages as Msg
 
 
 # sys.argv=[sys.argv[0],"-h"]
+# sys.argv=[sys.argv[0],"D:\\Perldoop2\\perldoop2-test\\testRegex.pl"]
 
 def analyzer(files, args, output, main=False):
 	# Para cada fichero

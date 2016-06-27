@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 from libs import DataType as Dtp
 from libs import Variable

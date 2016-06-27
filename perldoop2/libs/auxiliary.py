@@ -207,6 +207,6 @@ class Auxiliary:
 		elif code.variable.type[0] == Dtp.LIST:
 			return re.sub(r'(.*)get\((.*)\)$', r'\1set(\2,' + exp + ')', code.value)
 		else:
-			return code.value + '=' + exp 
+			return code.value + ' = ' + exp 
 	
 

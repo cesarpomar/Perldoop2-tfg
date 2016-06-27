@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 from libs import Auxiliary as Aux
@@ -264,7 +263,8 @@ class Statements:
         else:
             # vamos de una en una copiando el tamaño
             for dim in variable.type[:-1]:
-                sizes.append(dim.size)
+                if dim.size is not None:
+                    sizes.append(dim.size)
         # Creamos el codigo de la inicializacion
         exp = Code(type=var.type)
         # Si estammos inicializando un array es obligatorio que al menos se tenga un tamaño

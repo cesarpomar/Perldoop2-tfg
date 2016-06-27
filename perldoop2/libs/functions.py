@@ -16,7 +16,7 @@ from libs import Variable
 class Functions():
     
     perl_functions = ('CHOMP', 'CHOP', 'CLOSE', 'DEFINED', 'DELETE', 'DIE', 'EACH', 'EXISTS', 'EXIT', 'JOIN',
-                'KEYS', 'LC', 'LCFIRST', 'LENGTH', 'OPEN', 'POP', 'PRINT', 'PUSH', 'SAY', 'SHIRFT',
+                'KEYS', 'LC', 'LCFIRST', 'LENGTH', 'OPEN', 'POP', 'PRINT', 'PUSH', 'SAY', 'SHIFT',
                 'SORT', 'SPLICE', 'SPLIT', 'SUBSTR', 'SYSTEM', 'UC', 'UCFIRST', 'UNSHIFT', 'VALUES')
     
     # Funciones con mas de un argumento para que el lexer pueda emular los parentesis        
@@ -132,7 +132,7 @@ class Functions():
         declares += list[1].declares
         # Codigo
         value = 'Perl.join(' + Cst.to_string(list[0]) + ', ' + list[1].value + ')'
-        p[0] = Code(value=value, st_value=value, type=[Dtp.ARRAY, Dtp.STRING], declares=declares, pos=Position(p, 4), flags={Dtp.STATEMENT:True})
+        p[0] = Code(value=value, st_value=value, type=[Dtp.STRING], declares=declares, pos=Position(p, 4), flags={Dtp.STATEMENT:True})
         
     def p_function_keys_values(self, p):
         '''function_call : KEYS LPAREN list RPAREN
@@ -155,7 +155,7 @@ class Functions():
         if p[1] == 'keys':
             rtype = [Dtp.ARRAY, Dtp.STRING]
         else:
-            rtype = [Dtp.LIST] + p[3][0].type[1:]
+            rtype = [Dtp.LIST] + list[0].type[1:]
         Aux.check_code(self, list[0])
         # Si no es un hash, forzamos un cast para lanzar un error
         if list[0].type[0] != Dtp.HASH:
@@ -575,7 +575,7 @@ class Functions():
             if len(list) > 3:
                 Aux.check_code(self, list[3])  
                 declares += list[3].declares
-                value += ', ' + Cst.to_string(list[2])
+                value += ', ' + Cst.to_string(list[3])
                 # Llamada sin uso de retorno
                 code.st_value = list[0].value + ' = ' + 'Perl.substr(' + Cst.to_string(list[0]) + ', ' + value + ')'
                 # Llamada con uso de retorno
@@ -583,13 +583,16 @@ class Functions():
                 # Realizamos la referenciacion
                 update = Aux.arg_ref(self, code, list[0].type, list[0])
                 # Cerramos los parentesis dela funcion
-                code.value += ')'
+                code.value += ', '+value+ ')'
                 # Funcion auxiliar para la actualizacion
                 code.value = 'Pd.fe(' + code.value + ',' + update + ')'                
             else:
                 code.value = code.st_value = 'Perl.substr(' + Cst.to_string(list[0]) + ', ' + value + ')'
         else:
             code.value = code.st_value = 'Perl.substr(' + Cst.to_string(list[0]) + ', ' + value + ')'
+            
+            
+            
         p[0] = code
         
     def p_function_splice(self, p):
@@ -627,19 +630,22 @@ class Functions():
                     Msg.error(self, 'COLECTION_CONCAT_ERROR', list[3].pos, funct='splice')
                 Aux.check_code(self, list[3])  
                 declares += list[3].declares
-                value += ', ' + list[2].value
+                value += ', ' + list[3].value
         # Formato de la funcion
-        code = Code(type=list[0].type, declares=declares, pos=pos, flags={Dtp.STATEMENT:True})     
-        # Llamada sin uso de retorno
-        code.st_value = list[0].value + ' = ' + 'Perl.splice(' + list[0].value + ', ' + value + ')'
-        # Llamada con uso de retorno
-        code.value = 'Perl.splice('
-        # Realizamos la referenciacion
-        update = Aux.arg_ref(self, code, list[0].type, list[0])
-        # Cerramos los parentesis dela funcion
-        code.value += ')'
-        # Funcion auxiliar para la actualizacion
-        code.value = 'Pd.fe(' + code.value + ',' + update + ')'
+        code = Code(type=list[0].type, declares=declares, pos=pos, flags={Dtp.STATEMENT:True})  
+        if list[0].type[0] == Dtp.LIST:
+            code.value = code.st_value = list[0].value + ' = ' + 'Perl.splice(' + list[0].value + ', ' + value + ')'
+        else:   
+            # Llamada sin uso de retorno
+            code.st_value = list[0].value + ' = ' + 'Perl.splice(' + list[0].value + ', ' + value + ')'
+            # Llamada con uso de retorno
+            code.value = 'Perl.splice('
+            # Realizamos la referenciacion
+            update = Aux.arg_ref(self, code, list[0].type, list[0])
+            # Cerramos los parentesis dela funcion
+            code.value += ', '+value+')'
+            # Funcion auxiliar para la actualizacion
+            code.value = 'Pd.fe(' + code.value + ',' + update + ')'
         p[0] = code
         
     def p_function_push_unshift(self, p):
@@ -686,7 +692,7 @@ class Functions():
             # Realizamos la referenciacion
             update = Aux.arg_ref(self, code, list[0].type, list[0])
             # Cerramos los parentesis dela funcion
-            code.value += ')'
+            code.value += ', '+elem+')'
             # Funcion auxiliar para la actualizacion
             code.value = 'Pd.fe(' + code.value + ',' + update + ')'
         p[0] = code
@@ -694,8 +700,8 @@ class Functions():
     def p_function_pop_shirft(self, p):
         '''function_call : POP LPAREN list RPAREN
                         |  POP expression %prec FUNCTION
-                        |  SHIRFT LPAREN list RPAREN
-                        |  SHIRFT expression %prec FUNCTION''' 
+                        |  SHIFT LPAREN list RPAREN
+                        |  SHIFT expression %prec FUNCTION''' 
         # Variables
         if len(p) == 5:
             list = p[3]
@@ -704,26 +710,31 @@ class Functions():
             list = [p[2]]
             pos = p[2].pos
         # Errores
-        if len(list) != 2:
+        if len(list) != 1:
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return    
+        if(list[0].value[0]=='('):
+            list[0].value=list[0].value[1:-1]
         if not list[0].variable:      
             Msg.error(self, 'FUNCTION_NATIVE_VAR', Position(p, 1), n=1, function=p[1])  
         # Si no es un array o list, forzamos un cast para lanzar un error
         if list[0].type[0] not in (Dtp.ARRAY, Dtp.LIST):
             Cst.to_type(self, Code(type=[Dtp.ARRAY] + list[0].type[1:]), list[1])      
         
-        code = Code(type=list[0].type[1:], declares=list[0].declares, pos=pos, flags={Dtp.STATEMENT:True})     
-        # Llamada sin uso de retorno
-        code.st_value = list[0].value + ' = ' + 'Perl.' + p[1] + '(' + list[0].value + ')'
-        # Llamada con uso de retorno
-        code.value = 'Perl.' + p[1] + '('
-        # Realizamos la referenciacion
-        update = Aux.arg_ref(self, code, list[0].type, list[0])
-        # Cerramos los parentesis dela funcion
-        code.value += ')'
-        # Funcion auxiliar para la actualizacion
-        code.value = 'Pd.fe(' + code.value + ',' + update + ')'
+        code = Code(type=list[0].type[1:], declares=list[0].declares, pos=pos, flags={Dtp.STATEMENT:True})   
+        if list[0].type[0] == Dtp.LIST:
+            code.value = code.st_value = 'Perl.' + p[1] + '(' + list[0].value + ')'
+        else:
+            # Llamada sin uso de retorno
+            code.st_value = list[0].value + ' = ' + 'Perl.' + p[1] + '(' + list[0].value + ')'
+            # Llamada con uso de retorno
+            code.value = 'Perl.' + p[1] + '('
+            # Realizamos la referenciacion
+            update = Aux.arg_ref(self, code, list[0].type, list[0])
+            # Cerramos los parentesis dela funcion
+            code.value += ')'
+            # Funcion auxiliar para la actualizacion
+            code.value = 'Pd.fe(' + code.value + ',' + update + ')'
         p[0] = code
     

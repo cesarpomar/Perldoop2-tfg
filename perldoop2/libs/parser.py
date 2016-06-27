@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import libs.ply.yacc as yacc
@@ -376,7 +375,7 @@ class Parser(Options, Functions, Hadoop):
 	### opt List ###
 	def p_opt_list_empty(self, p):
 		'opt_list :'
-		p[0] = None
+		p[0] = []
 	
 	def p_opt_list(self, p):
 		'opt_list : list'

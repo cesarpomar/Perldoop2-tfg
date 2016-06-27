@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 from libs import Auxiliary as Aux
 from libs import Casting as Cst
@@ -91,7 +90,7 @@ class Operations:
         Aux.check_code(parser, exp2)
         # Comprobamos si se aplica sobre un string
         if exp1.type[0] != Dtp.STRING:
-            Msg.error(parser, 'NOT_STRING_CONCAT', op.pos)
+            Msg.error(parser, 'NOT_STRING_CONCAT', exp1.pos)
         # Perl ya obliga a que el primer operador sea string y el resto al igual que en java no importa
         code.type = [Dtp.STRING]
         code.value = exp1.value + ' + ' + exp2.value
@@ -260,13 +259,13 @@ class Operations:
         return code
     
     @classmethod
-    def cmp_string(Ops, parser, str1, str2, compare):
+    def cmp_string(Ops, parser, str1, str2):
         code = str1 + str2
         # Comprobamos las expresiones
         Aux.check_code(parser, str1)
         Aux.check_code(parser, str2)   
         # Componemos la expresion 
-        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ') ' + compare + ' '
+        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ') '
         code.value_opt = code.value
         code.type = [Dtp.INTEGER]
         return code
@@ -310,6 +309,7 @@ class Operations:
             Msg.error(parser, 'SCALAR_REQUIRES', var.pos) 
         value = Code(value='Regex.s(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
         code.value = Aux.readToEqual(var, Cst.to_type(parser, var, value))
+        code.type = var.type;
         return code
     
     @classmethod
@@ -323,8 +323,9 @@ class Operations:
         # No puede ser una coleccion
         if len(var.type) > 1:
             Msg.error(parser, 'SCALAR_REQUIRES', var.pos) 
-        value = Code(value='Regex.tr(' + Cst.to_string(var) + ',v"' + regex + '")', type=[Dtp.STRING])    
+        value = Code(value='Regex.tr(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
         code.value = Aux.readToEqual(var, Cst.to_type(parser, var, value))
+        code.type = var.type;
         return code
     
     @classmethod

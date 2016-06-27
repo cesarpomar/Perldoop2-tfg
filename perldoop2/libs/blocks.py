@@ -86,7 +86,7 @@ class Blocks:
         # Si hay declaraciones creamos un bloque externo y las declaramos
         if exp.declares:
             code.value = '{\n' + Aux.create_declare(exp) + code.value + '}\n'
-        Bks.do_block_checks(Bks, parser, code, block)
+        Bks.do_block_checks(parser, code, block)
         # Borramos las variables del bloque
         parser.variables.pop()  
         return code
@@ -100,7 +100,7 @@ class Blocks:
         # Si hay declaraciones creamos un bloque externo y las declaramos
         if exp.declares:
             exp.value = '{\n' + Aux.create_declare(parser, exp) + code.value + '}\n'
-        Bks.do_block_checks(Bks, parser, code, block)   
+        Bks.do_block_checks(parser, code, block)   
         # Borramos las variables del bloque
         parser.variables.pop()  
         return code
@@ -148,7 +148,7 @@ class Blocks:
         # Guardamos los flags, las declaraciones en la expresion y la posicion
         code = Code(flags=block.flags, declares=exp.declares, pos=pos)
         # Creamos el bloque
-        code.value = 'else if(!(' + Cst.to_boolean(exp) + ')){\n' + block.value + '}'    
+        code.value = 'else if(' + Cst.to_boolean(exp) + '){\n' + block.value + '}'    
         # Guardamos las asignaciones para comprobar despues de las clausulas elsif y else
         code.var_assing = parser.assigns.pop()
         # Eliminamos las variables declaradas en el propio bloque
@@ -268,6 +268,7 @@ class Blocks:
             # Quitamos la coma 
             for_head2 = for_head2[:-2]
         # Campo de inicializacion
+        external = False
         if list1:
             # Si hay declaraciones de otros bloques nos ahorramos la llamada a la funcion de comprobacion
             external = external_code or Bks.external_for(list1)
