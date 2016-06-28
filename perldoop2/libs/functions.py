@@ -21,15 +21,35 @@ class Functions():
     
     # Funciones con mas de un argumento para que el lexer pueda emular los parentesis        
     perlArgs = {
+    'CHOMP':1,
+    'CHOP':1,
+    'CLOSE':1,
+    'DEFINED':1,
+    'DELETE':1,
+    'DIE':1,
+    #'EACH':, No es necesario
+    'EXISTS':1,
+    'EXIT':1,
     'JOIN':2,
+    'KEYS':1,
+    'LC':1,
+    'LCFIRST':1,
+    'LENGTH':1,
     'OPEN':3,
+    'POP':1,
     'PRINT':-1,
     'PUSH':2,
     'SAY':-1,
+    'SHIFT':1,
+    'SORT':1,
     'SPLICE':4,
     'SPLIT':2,
     'SUBSTR':4,
+    'SYSTEM':1,
+    'UC':1,
+    'UCFIRST':1,
     'UNSHIFT':2,
+    'VALUES':1,
     }
     
     def __init__(self):  
