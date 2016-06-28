@@ -206,7 +206,7 @@ class Statements:
         # Preparamos el valor
         value = Cst.to_type(parser, code, exp)    
         # Si no es una variable o es un tipo basico
-        if not exp.variable or exp.type[0] not in (Dtp.HASH, Dtp.LIST, Dtp.ARRAY) or exp.value != exp.variable.name or var.ref:
+        if not exp.variable or var.type[0] not in (Dtp.HASH, Dtp.LIST, Dtp.ARRAY) or exp.value != exp.variable.name or var.ref:
             code.value = var.value + var.store_value + value + var.end_value
         # Si es una coleccion se debe hacer una copia superficial
         else:
@@ -228,12 +228,12 @@ class Statements:
         return code
     
     @classmethod
-    def equals_declare(Sts, parser, var):
+    def equals_declare(Sts, parser, var , undef=False):
         # Si la parte izquierda no es una variable
         if not var.var.variable:
             Msg.error(parser, 'VAR_REQUIRES', var.pos) 
         # Si no es una coleccion la igualamos a null
-        if var.type[0] not in [Dtp.ARRAY, Dtp.HASH, Dtp.LIST]:
+        if undef or var.type[0] not in [Dtp.ARRAY, Dtp.HASH, Dtp.LIST]:
             parser.assigns[-1][var.value] = True
             return Sts.equals(parser, var, Code(type=var.type, value='null'))    
         # Obtenermos una referencia directa a la variable

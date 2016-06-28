@@ -57,7 +57,10 @@ class Casting:
 				return '1'
 		# Si es un numero de mayor rango
 		elif code.type[0] in [Dtp.LONG, Dtp.FLOAT, Dtp.DOUBLE]:
-			return '(int)(' + code.value + ')'
+			if re.match("^(\d*(\.\d*)?eE\d*)|(\d*\.\d*)$", code.value):	
+				return '(int)' + code.value
+			else:
+				return 'Pd.toInteger(' + code.value + ')'
 		# Si hay que interpretar una cadena
 		elif code.type[0] == Dtp.STRING:
 			return 'Integer.parseInt(' + code.value + ')'
@@ -91,7 +94,7 @@ class Casting:
 			if re.match("^(0[xbXB])?[\d]+$", code.value):
 				return code.value + 'l'
 			else:
-				return '((long)' + code.value + ')'
+				return 'Pd.toLong(' + code.value + ')'
 		# Si hay que interpretar una cadena
 		elif code.type[0] == Dtp.STRING:
 			return 'Long.parseLong(' + code.value + ')'
@@ -125,13 +128,13 @@ class Casting:
 			if re.match("^(0[xbXB])?[\d]+$", code.value):
 				return code.value + 'f'
 			else:
-				return '((float)' + code.value + ')'
+				return 'Pd.toFloat(' + code.value + ')'
 		elif code.type[0] == Dtp.DOUBLE:	
 			# Si es un numero, para ahorrar el cast añadimos f
-			if re.match("^\d*\.\d*eE\d*$", code.value):
-				return code.value + 'd'
+			if re.match("^(\d*(\.\d*)?eE\d*)|(\d*\.\d*)$", code.value):
+				return code.value + 'f'
 			else:
-				return '((float)' + code.value + ')'		
+				return 'Pd.toFloat(' + code.value + ')'		
 		# Si hay que interpretar una cadena
 		elif code.type[0] == Dtp.STRING:
 			return 'Float.parseFloat(' + code.value + ')'
@@ -160,12 +163,12 @@ class Casting:
 				# Como no existe un valor usable ponemos uno por defecto para evitar errores
 				return '1d'
 		# Si es un entero
-		elif code.type[0] == [Dtp.INTEGER, Dtp.LONG, Dtp.FLOAT]:
+		elif code.type[0] in [Dtp.INTEGER, Dtp.LONG, Dtp.FLOAT]:
 			# Si es un numero, para ahorrar el cast añadimos l
 			if re.match("^(0[xbXB])?[\d]+$", code.value):
 				return code.value + 'd'
 			else:
-				return '((double)' + code.value + ')'
+				return 'Pd.toDouble(' + code.value + ')'
 		# Si hay que interpretar una cadena
 		elif code.type[0] == Dtp.STRING:
 			return 'Double.parseDouble(' + code.value + ')'
@@ -266,6 +269,8 @@ class Casting:
 				return Cst.to_boolean(code)
 			elif c_type.type[0] == Dtp.INTEGER:
 				return Cst.to_integer(code)
+			elif c_type.type[0] == Dtp.LONG:
+				return Cst.to_long(code)
 			elif c_type.type[0] == Dtp.FLOAT:
 				return Cst.to_float(code)
 			elif c_type.type[0] == Dtp.DOUBLE:

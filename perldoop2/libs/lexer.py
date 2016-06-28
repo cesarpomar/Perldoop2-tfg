@@ -78,7 +78,7 @@ class Lexer():
 	reserved_map['lt'] = 'STR_LT'
 	reserved_map['ge'] = 'STR_GE'
 	reserved_map['eq'] = 'STR_EQ'
-	reserved_map['ne'] = 'RSTR_NE'
+	reserved_map['ne'] = 'STR_NE'
 
 	
 	# #
@@ -192,7 +192,8 @@ class Lexer():
 	# Constantes
 	INT_NUMBER			 = r'(([1-9]\d*)|(o[xX][a-fA-F\d]+)|(o[bB][01]+)|(0[0-7]*))'
 	FLOAT		 		 = r'((\d*\.\d+)|(\d+\.\d*))'
-	FLOAT_NUMBER		 = r'(' + INT_NUMBER + '|' + FLOAT + ')[eE](\+-)?' + INT_NUMBER
+	SCIENTIFIC		 	 = r'(' + INT_NUMBER + '|' + FLOAT + ')[eE](\+-)?' + INT_NUMBER
+	FLOAT_NUMBER		 = r'('+FLOAT+'|'+SCIENTIFIC+')'
 	STRING_QUOTE		 = r'\'([^\'\\\n]|(\\.))*\''
 	STRING_DOUBLE_QUOTE	 = r'"([^"\\\n]|(\\.))*"'
 	CMD					 = r'`.+`'

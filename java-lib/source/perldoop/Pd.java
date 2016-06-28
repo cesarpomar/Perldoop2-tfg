@@ -19,6 +19,46 @@ import perldoop.util.Sequence;
 public class Pd {
 
     /**
+     * Convierte un numero a entero
+     *
+     * @param n Numero
+     * @return Entero
+     */
+    public static Integer toInteger(Number n) {
+        return n.intValue();
+    }
+
+    /**
+     * Convierte un numero a long
+     *
+     * @param n Numero
+     * @return Long
+     */
+    public static Long toLong(Number n) {
+        return n.longValue();
+    }
+
+    /**
+     * Convierte un numero a float
+     *
+     * @param n Numero
+     * @return Float
+     */
+    public static Float toFloat(Number n) {
+        return n.floatValue();
+    }
+
+    /**
+     * Convierte un numero a double
+     *
+     * @param n Numero
+     * @return Double
+     */
+    public static Double toDouble(Number n) {
+        return n.doubleValue();
+    }
+
+    /**
      * Compara dos expresiones
      *
      * @param exp1 expresion 1
@@ -42,7 +82,7 @@ public class Pd {
      * @param obj Objeto
      * @return tamaño
      */
-    public static Integer len(Object obj) {
+    public static int len(Object obj) {
         if (obj == null) {
             return 1;
         } else if (obj instanceof Object[]) {

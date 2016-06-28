@@ -3,6 +3,7 @@ my $i;#<integer>
 my $l;#<long>
 my $f;#<float>
 my $d;#<double>
+my $s;#<string>
 my $file;#<file>
 my @array;#<array><integer>
 my @list;#<list><string>

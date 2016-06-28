@@ -112,7 +112,8 @@ class Operations:
         # Comprobamos la expresion
         Aux.check_code(parser, exp)
         # Convertimos la expresion a numero y la negamos
-        exp.value = "-" + Cst.to_number(exp)  
+        exp.value = "-" + Cst.to_number(exp) 
+        return exp 
     
     @classmethod    
     def plusplus_var(Ops, parser, var, check=True):
@@ -265,7 +266,7 @@ class Operations:
         Aux.check_code(parser, str1)
         Aux.check_code(parser, str2)   
         # Componemos la expresion 
-        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ') '
+        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ')'
         code.value_opt = code.value
         code.type = [Dtp.INTEGER]
         return code
@@ -277,7 +278,7 @@ class Operations:
         Aux.check_code(parser, str1)
         Aux.check_code(parser, str2)   
         # Componemos la expresion 
-        code.value = Cst.to_string(str1) + '.compareTo(' + Cst.to_string(str2) + ') ' + compare + ' '
+        code.value = Cst.to_string(str1) + '.compareTo(' + Cst.to_string(str2) + ') ' + compare
         code.value_opt = code.value
         code.type = [Dtp.BOOLEAN]
         return code
@@ -365,7 +366,7 @@ class Operations:
         Aux.check_code(parser, exp2)
         # Si el operador es de baja precedencia, a�adimos parentesis a sus expresiones  
         if low:
-            b_value = '(' + Cst.to_boolean(exp1) + ') || (' + +Cst.to_boolean(exp2) + ')'
+            b_value = '(' + Cst.to_boolean(exp1) + ') || (' + Cst.to_boolean(exp2) + ')'
         else:
             b_value = Cst.to_boolean(exp1) + ' || ' + Cst.to_boolean(exp2)    
         # Si los operandos dos operandos booleanos o no son del mismo tipo
@@ -389,7 +390,7 @@ class Operations:
         Aux.check_code(parser, exp2)
         # Si el operador es de baja precedencia, a�adimos parentesis a sus expresiones  
         if low:
-            b_value = '(' + Cst.to_boolean(exp1) + ') && (' + +Cst.to_boolean(exp2) + ')'
+            b_value = '(' + Cst.to_boolean(exp1) + ') && (' + Cst.to_boolean(exp2) + ')'
         else:
             b_value = Cst.to_boolean(exp1) + ' && ' + Cst.to_boolean(exp2)    
         # Si los operandos dos operandos booleanos o no son del mismo tipo
@@ -427,7 +428,7 @@ class Operations:
         return exp    
     
     @classmethod
-    def logic_xor(parser, op, exp1, exp2):
+    def logic_xor(Ops, parser, op, exp1, exp2):
         code = exp1 + exp2
         # Comprobamos las expresiones
         Aux.check_code(parser, exp1)
@@ -484,7 +485,7 @@ class Operations:
             return Code(type=[None])
         # Comprobamos la traduccion nativa
         if (native and (len(var.var.type) == 1 or (len(var.var.type) > 1 and var.var.type[-2] == Dtp.ARRAY)) 
-            and (var.type[0] not in ntypes or var.type[0] in types)):
+            and (var.type[0] not in ntypes and var.type[0] in types)):
             # Creamos la variable
             var = Coll.create_value_var(var)
             # Creamos el codigo

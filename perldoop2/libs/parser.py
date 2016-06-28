@@ -509,7 +509,7 @@ class Parser(Options, Functions, Hadoop):
 		
 	def p_assignment_declare_var(self, p):
 		'assignment : var_access EQUALS UNDEF'		
-		p[0] = Sts.equals_declare(self, p[1])
+		p[0] = Sts.equals_declare(self, p[1],True)
 		
 	def p_assignment_input(self, p):
 		'assignment : var_access EQUALS STDIN'
@@ -573,7 +573,7 @@ class Parser(Options, Functions, Hadoop):
 		
 	def p_assignment_xequal(self, p):
 		'assignment : var_access XEQUAL expression'
-		p[0] = Ops.op_equals(self, p[1], p[3], p[2], Ops.logic_xor, types=(Dtp.BOOLEAN,))
+		p[0] = Ops.op_equals(self, p[1], p[3], p[2], Ops.op_repeat, native=False)
 		
 	def p_assignment_periodequal(self, p):
 		'assignment : var_access PERIODEQUAL expression'
@@ -676,27 +676,27 @@ class Parser(Options, Functions, Hadoop):
 		
 	def p_expression_str_eq(self, p):
 		'comparations : expression STR_EQ expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '==0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '== 0')
 		
 	def p_expression_str_ne(self, p):
 		'comparations : expression STR_NE expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '!=0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '!= 0')
 		
 	def p_expression_str_lt(self, p):
 		'comparations : expression STR_LT expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '<0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '< 0')
 		
 	def p_expression_str_le(self, p):
 		'comparations : expression STR_LE expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '<=0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '<= 0')
 		
 	def p_expression_str_gt(self, p):
 		'comparations : expression STR_GT expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '>0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '> 0')
 		
 	def p_expression_str_ge(self, p):
 		'comparations : expression STR_GE expression'
-		p[0] = Ops.string_compare(self, p[1], p[3], '>=0')
+		p[0] = Ops.string_compare(self, p[1], p[3], '>= 0')
 		
 	def p_expression_cmp_str(self, p):
 		'comparations : expression CMP expression'
