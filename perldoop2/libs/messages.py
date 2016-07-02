@@ -90,7 +90,7 @@ class Messages:
 	'EACH_ERROR':'La funcion each necesita dos variables a la izquierda y un hash a la derecha.',
 	'SORT_TYPE_A_ERROR':'La funcion sort necesita la declaracion de tipo de a.',
 	'SORT_TYPE_ERROR':'El tipo de a no coincide con el tipo de %var.',
-	'SORT_ARRAY_ERROR':'La funcion sort solo funciona sobre arrays o listas.',
+	'FUN_ARRAY_ERROR':'La funcion %fun solo funciona sobre arrays o listas.',
 	'DELETE_NOT_HASH':'La funcion delete solo puede usarse sobre variables de tipo hash que contengan escalares.',
 	'COLECTION_CONCAT_ERROR':'La funcion %funct no puede concatenar dos colecciones de distinto tipo.',
 	# Errores Hadoop

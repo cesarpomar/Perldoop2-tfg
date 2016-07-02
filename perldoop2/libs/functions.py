@@ -386,7 +386,7 @@ class Functions():
             return
         # Si no es un elemento ordenable
         if exp.type[0] not in (Dtp.ARRAY, Dtp.LIST):
-            Msg.error(self, 'SORT_ARRAY_ERROR', exp.pos)  
+            Msg.error(self, 'FUN_ARRAY_ERROR', exp.pos, fun="SORT")  
             p[0] = Code(type=[Dtp.NONE])  
             return
         # Si el tipo no esta bien declarado
@@ -420,7 +420,7 @@ class Functions():
             return
         # Si no es un elemento ordenable
         if list[0].type[0] not in (Dtp.ARRAY, Dtp.LIST):
-            Msg.error(self, 'SORT_ARRAY_ERROR', list[0].pos)  
+            Msg.error(self, 'FUN_ARRAY_ERROR', list[0].pos, fun="SORT")  
             p[0] = Code(type=[Dtp.NONE])  
             return
         Aux.check_code(self, list[0], c_ref=False)
@@ -683,7 +683,7 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_VAR', Position(p, 1), n=1, function=p[1])
         # Si no es un array o list, forzamos un cast para lanzar un error
         if list[0].type[0] not in (Dtp.ARRAY, Dtp.LIST):
-            Cst.to_type(self, Code(type=[Dtp.ARRAY] + list[0].type[1:]), list[1])
+            Msg.error(self,'FUN_ARRAY_ERROR',list[0].pos,fun=p[1])  
         # Para poder añadir debe ser del mismo tipo o del tipo del contenido
         if  (len(list[1].type) > 1 and not Cst.equals_type(list[0].type[1:], list[1].type) and 
             not (Cst.equals_type(list[0].type[1:], list[1].type[1:]) 
@@ -738,9 +738,9 @@ class Functions():
             list[0].value=list[0].value[1:-1]
         if not list[0].variable:      
             Msg.error(self, 'FUNCTION_NATIVE_VAR', Position(p, 1), n=1, function=p[1])  
-        # Si no es un array o list, forzamos un cast para lanzar un error
+        # Si no es un array o list, lanzamos un error
         if list[0].type[0] not in (Dtp.ARRAY, Dtp.LIST):
-            Cst.to_type(self, Code(type=[Dtp.ARRAY] + list[0].type[1:]), list[1])      
+            Msg.error(self,'FUN_ARRAY_ERROR',list[0].pos,fun=p[1])    
         
         code = Code(type=list[0].type[1:], declares=list[0].declares, pos=pos, flags={Dtp.STATEMENT:True})   
         if list[0].type[0] == Dtp.LIST:
