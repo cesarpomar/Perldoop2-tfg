@@ -513,5 +513,5 @@ class Operations:
             return code
         # Si no se realiza uniendo la funcion con la operacion igual
         else:
-            return Sts.equals(parser, var, opf(parser, op[1], Code(type=var.type, value=var.value + var.read_value + var.end_value), exp))
+            return Sts.equals(parser, var, opf(parser, op[0], Code(type=var.type, value=var.value + var.read_value + var.end_value), exp))
      
