@@ -29,8 +29,8 @@ class Casting:
 	def to_number(Cst, code):
 		# Si es una coleccion o un booleano usamos su transformacion entera
 		if code.type[0] == Dtp.VOID or len(code.type) > 1 or code.type[0] == Dtp.BOOLEAN:
-			code.type = [Dtp.INTEGER]
 			code.value = Cst.to_integer(code)
+			code.type = [Dtp.INTEGER]
 		# Si es una cadena combertimos a double
 		elif code.type[0] == Dtp.STRING:
 			code.value = Cst.to_double(code)
@@ -57,6 +57,11 @@ class Casting:
 			return code.value
 		elif code.type[0] == Dtp.FILE:
 			return 'true'
+		elif re.match("^\d*$", code.value):
+			if(code.value=='0'):
+				return "false"
+			else:
+				return "true"
 		else:
 			return 'Pd.eval(' + code.value + ')'
 	
@@ -274,7 +279,7 @@ class Casting:
 			# Si era una variable ya no lo es
 			list.variable = None
 			# Llama a la funcion
-			list.value = 'Pd.array(' + list.value + ')'
+			list.value=list.value+".toArray("+Cst.creare_inicialize(list.type,[])+"{})"
 		return list.value
 	
 	@classmethod		

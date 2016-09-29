@@ -143,7 +143,7 @@ class Auxiliary:
 	def check_code(Aux, parser, code, c_ref=True):
 		if code.variable and not Var.is_assign(parser, code.variable.name):
 			Msg.error(parser, 'READ_BEFORE_ASSIGN', code.pos, var=code.value)
-		if c_ref and (code.type[0] == Dtp.REF or  code.ref):
+		if c_ref and code.type[0] == Dtp.REF:
 			Msg.error(parser, 'REF_OPERATION', code.pos)	
 	
 	# Crea los imports de la clase
@@ -224,5 +224,64 @@ class Auxiliary:
 			return re.sub(r'(.*)get\((.*)\)$', r'\1set(\2,' + exp + ')', code.value)
 		else:
 			return code.value + ' = ' + exp 
+
+	# Interpola las variables en el código
+	@classmethod
+	def interpolateVar(Aux, parser, string):
+		vars=re.findall("\$[a-zA-Z_][a-zA-Z_0-9]*",string)
+		#Msg.error(parser, 'VAR_NOT_EXIST', var[1:])
+		for var in vars:
+			entry = Var.get_var(parser, var[1:])
+			if var and len(entry.type) == 1:
+				string=string.replace(var,"\"+"+var[1:]+"+\"")		
 	
+		vars=re.findall("\$\{[a-zA-Z_][a-zA-Z_0-9]*\}",string)
+		for var in vars:
+			entry = Var.get_var(parser,var[2:-1])
+			if var and len(entry.type) == 1:					
+				string=string.replace(var,"\"+\""+var[2:-1]+"\"+\"")
+		return string		
+	
+	# Arregla los escapes
+	@classmethod
+	def fixScapes(Aux, string, regex=False):
+		scapesRex={'.': True, '^': True, '$': True, '*': True, '+': True, '-': True, '?': True, 
+			'(': True, ')': True, '[': True, ']': True, '{': True, '}': True, '|': True,'/': True}
+		scapesJava={"t":True,"b":True,"n":True,"r":True,"f":True,'"':True}
+		fixstring=""
+		last=""
+		for c in string:
+			if last == "\\":
+				if c in scapesJava:
+					fixstring=fixstring+"\\"+c
+				elif regex and (c in scapesRex or c.isalpha()):
+					fixstring=fixstring+"\\\\"+c
+				elif regex and c == "\\":
+					fixstring=fixstring+"\\\\\\\\"
+				elif c == "\\":
+					fixstring=fixstring+"\\\\"
+				else:
+					fixstring=fixstring+c
+				last = ""
+				continue
+			elif c != "\\":
+				fixstring=fixstring+c
+			last=c
+		return fixstring
+	
+	# Escapa un caracter eb toda la cadena
+	@classmethod
+	def scapeChar(Aux, string, chars):
+		newstring=""
+		scapes=0
+		for c in string:		
+			if c in chars and scapes % 2 == 0:
+				newstring = newstring + "\\"
+			newstring = newstring + c
+			if c == '\\':
+				scapes=scapes+1
+			else:
+				scapes=0
+			
+		return newstring
 

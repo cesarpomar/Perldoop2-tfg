@@ -1,0 +1,10 @@
+/java-lib/nbproject/private/
+/java-lib/build/
+/Perldoop3/dist/
+
+**.pyc
+**.out
+/.metadata
+/perldoop2/.settings
+/perldoop2/.project
+/perldoop2/.pydevproject

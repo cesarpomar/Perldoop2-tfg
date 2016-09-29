@@ -115,10 +115,10 @@ class Functions():
         # Si no es un fichero
         if file.type[0] != Dtp.FILE:
             Msg.error(self, 'NOT_FILE', list[0].pos, var=list[0].value)
-        Aux.check_code(self, file)
+        Aux.check_code(self, file, c_ref=False)
         # Argumetos
         for exp in list:
-            Aux.check_code(self, exp)
+            Aux.check_code(self, exp, c_ref=False)
             declares += exp.declares
             Aux.opt_paren(exp)
             args += Cst.to_repr(exp) + ', '   
@@ -139,7 +139,7 @@ class Functions():
             p[0] = Code(type=[Dtp.NONE])
             return 
         for exp in list:
-            Aux.check_code(self, exp)
+            Aux.check_code(self, exp, c_ref=False)
             declares += exp.declares
             args += Cst.to_string(exp) + ', '  
         args = args[:-2]              
@@ -159,12 +159,12 @@ class Functions():
             p[0] = Code(type=[Dtp.NONE])
             return  
         # Si no es un array o lista de String, hacemos un cast para invocar un error    
-        if list[1].type[1] != Dtp.STRING and list[1].type[0] not in (Dtp.ARRAY, Dtp.LIST):
+        if list[1].type[0] not in (Dtp.ARRAY, Dtp.LIST) and list[1].type[1] != Dtp.STRING:
             Cst.to_type(self, Code(type=[Dtp.ARRAY, Dtp.STRING]), list[1])
             p[0] = Code(type=[Dtp.NONE])
             return 
-        Aux.check_code(self, list[0])
-        Aux.check_code(self, list[1])
+        Aux.check_code(self, list[0], c_ref=False)
+        Aux.check_code(self, list[1], c_ref=False)
         declares += list[0].declares
         declares += list[1].declares
         # Codigo
@@ -193,7 +193,7 @@ class Functions():
             rtype = [Dtp.ARRAY, Dtp.STRING]
         else:
             rtype = [Dtp.LIST] + list[0].type[1:]
-        Aux.check_code(self, list[0])
+        Aux.check_code(self, list[0], c_ref=False)
         # Si no es un hash, forzamos un cast para lanzar un error
         if list[0].type[0] != Dtp.HASH:
             Cst.to_type(self, Code(type=[Dtp.HASH] + list[0].type[1:]), list[1])
@@ -231,7 +231,7 @@ class Functions():
         if not list[0].variable:      
             Msg.error(self, 'FUNCTION_NATIVE_VAR', Position(p, 1), n=1, function=p[1])
         # Codigo
-        Aux.check_code(self, var)
+        Aux.check_code(self, var, c_ref=False)
         Aux.opt_paren(var)
         code = Code(type=rtype, declares=var.declares, pos=pos, flags={Dtp.STATEMENT:True})   
         # Llamada sin uso de retorno
@@ -261,7 +261,7 @@ class Functions():
             Msg.error(self, 'EACH_ERROR', hash.pos) 
             p[0] = Code(type=[Dtp.NONE])   
             return 
-        Aux.check_code(self, hash)
+        Aux.check_code(self, hash, c_ref=False)
         # Codigo
         code = Code(type=[Dtp.NONE], pos=hash.pos, flags={Dtp.STATEMENT:True})  
         # Variables para iterador y entrada
@@ -355,7 +355,7 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return
-        Aux.check_code(self, list[0])
+        Aux.check_code(self, list[0], c_ref=False)
         # Si no es un fichero
         if list[0].type[0] != Dtp.FILE:
             Msg.error(self, 'NOT_FILE', list[0].pos, var=list[0].value) 
@@ -412,7 +412,7 @@ class Functions():
             p[0] = Code(type=[Dtp.NONE])  
             return        
         Aux.check_code(self, exp, c_ref=False)
-        Aux.check_code(self, cmp)
+        Aux.check_code(self, cmp, c_ref=False)
         Aux.opt_paren(exp)
         # codigo   
         type = self.variables[-1]['a'].type
@@ -467,7 +467,7 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return
-        Aux.check_code(self, list[0])
+        Aux.check_code(self, list[0], c_ref=False)
         # cerrado del fichero
         Aux.opt_paren(list[0])
         value = 'Perl.' + p[1] + '(' + Cst.to_string(list[0]) + ')'     
@@ -488,11 +488,11 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return
-        Aux.check_code(self, list[0])
+        Aux.check_code(self, list[0], c_ref=False)
         # cerrado del fichero
         Aux.opt_paren(list[0])
         value = 'Perl.' + p[1] + '(' + Cst.to_string(list[0]) + ')'     
-        p[0] = Code(value=value, st_value=value, type=[Dtp.INTEGER], declares=list[0].declares, pos=pos, flags={Dtp.STATEMENT:True})     
+        p[0] = Code(value=value, st_value=value, type=[Dtp.BOOLEAN], declares=list[0].declares, pos=pos, flags={Dtp.STATEMENT:True})     
            
     def p_function_delete(self, p):
         '''function_call : DELETE LPAREN list RPAREN
@@ -509,8 +509,8 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return
-        # Tiene que ser una variable y la dimension accedida un hash
-        if  not list[0].variable or len(list[0].type) > 1 or (len(list[0].variable.type) > 1 and list[0].variable.type[-2] != Dtp.HASH):
+        # Tiene que ser una variable y la dimension accedida un hash       
+        if  not list[0].variable or (len(list[0].variable.type) > len(list[0].type) and list[0].variable.type[-len(list[0].type)-1] != Dtp.HASH):
             Msg.error(self, 'DELETE_NOT_HASH', list[0].pos)
             p[0] = Code(type=[Dtp.NONE])  
             return        
@@ -596,8 +596,8 @@ class Functions():
             Msg.error(self, 'FUNCTION_NATIVE_ERROR', Position(p, 1), function=p[1])   
             p[0] = Code(type=[Dtp.NONE])  
             return    
-        Aux.check_code(self, list[0])
-        Aux.check_code(self, list[1])  
+        Aux.check_code(self, list[0], c_ref=False)
+        Aux.check_code(self, list[1], c_ref=False)  
         declares += list[0].declares
         declares += list[1].declares
         # codigo
@@ -606,11 +606,11 @@ class Functions():
         code = Code(type=list[0].type, declares=declares, pos=pos, flags={Dtp.STATEMENT:True})  
         # Si tiene mas argumentos
         if len(list) > 2:
-            Aux.check_code(self, list[2])  
+            Aux.check_code(self, list[2], c_ref=False)  
             declares += list[2].declares
             value += ', ' + Cst.to_integer(list[2])
             if len(list) > 3:
-                Aux.check_code(self, list[3])  
+                Aux.check_code(self, list[3], c_ref=False)  
                 declares += list[3].declares
                 value += ', ' + Cst.to_string(list[3])
                 # Llamada sin uso de retorno
@@ -647,15 +647,15 @@ class Functions():
         # Si no es un array o list, forzamos un cast para lanzar un error
         if list[0].type[0] not in (Dtp.ARRAY, Dtp.LIST):
             Cst.to_type(self, Code(type=[Dtp.ARRAY] + list[0].type[1:]), list[1])
-        Aux.check_code(self, list[0])
-        Aux.check_code(self, list[1])  
+        Aux.check_code(self, list[0], c_ref=False)
+        Aux.check_code(self, list[1], c_ref=False)  
         declares += list[0].declares
         declares += list[1].declares
         # codigo
         value = Cst.to_integer(list[1])
         # Si tiene mas argumentos
         if len(list) > 2:
-            Aux.check_code(self, list[2])  
+            Aux.check_code(self, list[2], c_ref=False)  
             declares += list[2].declares
             value += ', ' + Cst.to_integer(list[2])
             if len(list) > 3:
@@ -665,7 +665,7 @@ class Functions():
                     Cst.to_type(self, Code(type=[Dtp.ARRAY] + list[3].type[1:]), list[1])
                 elif not Cst.equals_type(list[0].type[1:], list[3].type[1:]):
                     Msg.error(self, 'COLECTION_CONCAT_ERROR', list[3].pos, funct='splice')
-                Aux.check_code(self, list[3])  
+                Aux.check_code(self, list[3], c_ref=False)  
                 declares += list[3].declares
                 value += ', ' + list[3].value
         # Formato de la funcion
@@ -708,8 +708,8 @@ class Functions():
             Msg.error(self, 'COLECTION_CONCAT_ERROR', list[1].pos, funct=p[1])
             p[0] = Code(type=[Dtp.NONE])  
             return  
-        Aux.check_code(self, list[0])
-        Aux.check_code(self, list[1])  
+        Aux.check_code(self, list[0], c_ref=False)
+        Aux.check_code(self, list[1], c_ref=False)  
         declares += list[0].declares
         declares += list[1].declares
         # Codigo

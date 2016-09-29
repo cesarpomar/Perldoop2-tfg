@@ -66,13 +66,23 @@ public class Pd {
      * @return 0 si son iguales, 1 mayor y -1 menor
      */
     public static Integer cmp(Comparable exp1, Comparable exp2) {
-        int cmp = exp1.compareTo(exp2);
-        if (cmp == 0) {
-            return 0;
-        } else if (cmp > 0) {
+        if (exp1 == null) {
+            if (exp2 == null) {
+                return 0;
+            } else {
+                return -1;
+            }
+        } else if (exp2 == null) {
             return 1;
         } else {
-            return -1;
+            int cmp = exp1.compareTo(exp2);
+            if (cmp == 0) {
+                return 0;
+            } else if (cmp > 0) {
+                return 1;
+            } else {
+                return -1;
+            }
         }
     }
 
@@ -281,16 +291,14 @@ public class Pd {
      *
      * @param exp1 Primera expresion
      * @param exp2 Segunda expresion
-     * @return Si solo una de las expresiones es cierta retorna True, false en
-     * cualquier otro caso.
+     * @return Si solo una de las expresiones es cierta retorna True, false en cualquier otro caso.
      */
     public static Boolean xor(Boolean exp1, Boolean exp2) {
         return (exp1 && !exp2) || (!exp1 && exp2);
     }
 
     /**
-     * Metodo auxiliar para poder ejecutar una asignacion despues de ejecutar un
-     * metodo.
+     * Metodo auxiliar para poder ejecutar una asignacion despues de ejecutar un metodo.
      *
      * @param <T> Tipo del valor devuelto
      * @param f Valor devuelto por la funcion
@@ -318,8 +326,7 @@ public class Pd {
     }
 
     /**
-     * Crea un array desde init hasta end, ambos incluidos. Si end > init el
-     * array devuleto estará vacio.
+     * Crea un array desde init hasta end, ambos incluidos. Si end > init el array devuleto estará vacio.
      *
      * @param init Numero de inicio del array
      * @param end Numero final del array
@@ -342,8 +349,7 @@ public class Pd {
     }
 
     /**
-     * Crea un array desde init hasta end, ambos incluidos. Si end > init el
-     * array devuleto estará vacio.
+     * Crea un array desde init hasta end, ambos incluidos. Si end > init el array devuleto estará vacio.
      *
      * @param init Cadena de inicio del array
      * @param end Cadena final del array
@@ -416,17 +422,6 @@ public class Pd {
      */
     public static <T> Map<String, T> copy(Map<String, T> object) {
         return new HashPerl<>(object);
-    }
-
-    /**
-     * Crea un array a partir de una lista pasada como parametro
-     *
-     * @param <T> Tipo de la lista
-     * @param list Lista
-     * @return Array
-     */
-    public static <T> T[] array(List<T> list) {
-        return (T[]) list.toArray(new Object[0]);
     }
 
     /**

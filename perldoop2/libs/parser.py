@@ -67,7 +67,6 @@ class Parser(Options, Functions, Hadoop):
 		('left', 'LLNOT'),
 		# nonassoc list operators (rightward),
 		('left', 'COMMA'),
-		('left', 'FUNCTION'),
 		('right', 'EQUALS', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL', 'PLUSEQUAL', 'MINUSEQUAL',
 		'LSHIFTEQUAL', 'RSHIFTEQUAL', 'ANDEQUAL', 'OREQUAL', 'XOREQUAL', 'POWEQUAL',
 		'LANDEQUAL', 'LOREQUAL', 'PERIODEQUAL', 'XEQUAL'),
@@ -87,6 +86,7 @@ class Parser(Options, Functions, Hadoop):
 		('left', 'LNOT', 'NOT', 'UNITARY'),
 		('right', 'POW'),
 		('nonassoc', 'PLUSPLUS', 'MINUSMINUS'),
+		('left', 'FUNCTION'),
 		('right', 'LPAREN', 'RPAREN', 'LBRACKET', 'RBRACKET', 'LBRACE', 'RBRACE'),
 		# left terms and list operators(leftward)
 	)
@@ -465,6 +465,8 @@ class Parser(Options, Functions, Hadoop):
 		p[0] = p[2]
 		p[0].pos = Position(p, 3)
 		p[0].value = p[1] + p[2].value + p[3]		
+		if p[0].value_opt:
+			p[0].value_opt = p[1] + p[0].value_opt + p[3];
 				
 	def p_expression_assignment(self, p):
 		'expression : assignment'
@@ -726,19 +728,19 @@ class Parser(Options, Functions, Hadoop):
 	### Regex ###	
 	def p_not_m_regex(self, p):
 		'regex : expression STR_NO_REX M_REGEX'	
-		p[0] = Ops.m_regex(self, p[1], p[3], Position(p, 3), negate=True)
-	
+		p[0] = Ops.m_regex(self, p[1], Aux.interpolateVar(self, Aux.scapeChar(Aux.fixScapes(p[3],True),['"'])), Position(p, 3), negate=True)	
+		
 	def p_m_regex(self, p):
 		'regex : expression STR_REX M_REGEX'	
-		p[0] = Ops.m_regex(self, p[1], p[3], Position(p, 3))
+		p[0] = Ops.m_regex(self, p[1], Aux.interpolateVar(self, Aux.scapeChar(Aux.fixScapes(p[3],True),['"'])), Position(p, 3))
 	
 	def p_s_regex(self, p):
 		'regex : expression STR_REX S_REGEX'	
-		p[0] = Ops.s_regex(self, p[1], p[3], Position(p, 3))
+		p[0] = Ops.s_regex(self, p[1], Aux.interpolateVar(self, Aux.scapeChar(Aux.fixScapes(p[3],True),['"'])), Position(p, 3))
 	
 	def p_y_regex(self, p):
 		'regex : expression STR_REX Y_REGEX'	
-		p[0] = Ops.y_regex(self, p[1], p[3], Position(p, 3))	
+		p[0] = Ops.y_regex(self, p[1], Aux.interpolateVar(self, Aux.scapeChar(Aux.fixScapes(p[3],True),['"'])), Position(p, 3))	
 		
 	### Binary ###
 	def p_binary_or(self, p):
@@ -963,15 +965,15 @@ class Parser(Options, Functions, Hadoop):
 		
 	def p_value_string_quote(self, p):	
 		'value : STRING_QUOTE'
-		p[0] = Code(value='"' + p[1] + '"', type=[Dtp.STRING], pos=Position(p, 1))
+		p[0] = Code(value='"' + Aux.fixScapes(Aux.scapeChar(p[1],['"'])) + '"', type=[Dtp.STRING], pos=Position(p, 1))
 		
 	def p_value_string_double_quote(self, p):	
 		'value : STRING_DOUBLE_QUOTE'
-		p[0] = Code(value='"' + p[1] + '"', type=[Dtp.STRING], pos=Position(p, 1))
+		p[0] = Code(value='"' + Aux.interpolateVar(self, Aux.fixScapes(p[1])) + '"', type=[Dtp.STRING], pos=Position(p, 1))
 		
 	def p_value_cmd(self, p):	
 		'value : CMD'
-		p[0] = Sts.value_cmd(self, p[1], Position(p, 1))
+		p[0] = Sts.value_cmd(self, Aux.interpolateVar(self, Aux.fixScapes(p[1])), Position(p, 1))
 		
 		
 		

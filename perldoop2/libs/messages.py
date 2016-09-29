@@ -39,6 +39,7 @@ class Messages:
 	'HELP_EMULATE_PAREN':'Añade automáticamente los paréntesis a las funciones, si el código es sintácticamente correcto, debería hacerlo correctamente.', 	
 	'HELP_OPTIMIZE_CODE':'Mejora el código de salida haciéndolo más visible y eliminado redundancias dando lugar a un mayor rendimiento.', 	
 	'HELP_UNRECHEABLE_CODE':'Comprueba la existencia de código muerto, si existe, el código resultante no podrá ser copilado.', 	
+	'HELP_JREGEX':'Utiliza las librerías java Jregex y Jtr para evaluar las expresiones regulares en lugar de invocar a perl. (Más rápido pero puede no funcionar en todos los casos)', 
 	'HELP_ERROR_ABORT':'Para el análisis en caso de encontrar un error.', 	
 	'HELP_DEBUGGER':'Opciones para la depuración del análisis.', 	
 	'HELP_DEBUGGER_LEXER':'Activa la impresión de tokens para el analizador léxico.', 	
@@ -108,7 +109,7 @@ class Messages:
 	'SORT_TYPE_A_ERROR':'La funcion sort necesita la declaracion de tipo de a.',
 	'SORT_TYPE_ERROR':'El tipo de a no coincide con el tipo de %var.',
 	'FUN_ARRAY_ERROR':'La funcion %fun solo funciona sobre arrays o listas.',
-	'DELETE_NOT_HASH':'La funcion delete solo puede usarse sobre variables de tipo hash que contengan escalares.',
+	'DELETE_NOT_HASH':'La funcion delete solo puede usarse sobre variables de tipo hash.',
 	'COLECTION_CONCAT_ERROR':'La funcion %funct no puede concatenar dos colecciones de distinto tipo.',
 	# Errores Hadoop
 	'HD_MAPPER_MANY_LOOP':'Solo se puede usar una vez la etiqueta <mapper_loop>.',

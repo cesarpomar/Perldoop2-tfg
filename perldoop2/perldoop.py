@@ -56,6 +56,8 @@ def analyzer(files, args, output, main=False):
 			parser.optimize_code = True
 		if args.unreachable_code:
 			parser.unreachable_code = True
+		if args.jregex:
+			parser.jregex = True
 		if args.error_abort:
 			parser.error_abort = True
 		if args.debug_lexer:
@@ -71,7 +73,7 @@ def analyzer(files, args, output, main=False):
 				if args.debug_size > 0:
 					parser.parser_debug_len = args.debug_size
 		# Ejecucion
-		input = open(file, 'r')
+		input = open(file, 'r', encoding='utf8')
 		perl = input.read()
 		input.close()
 			
@@ -81,7 +83,7 @@ def analyzer(files, args, output, main=False):
 			# Identamos el codigo
 			java = Aux.identer(java)
 			# Escribimos el codigo
-			file = open(os.path.join(output, parser.class_name + '.java'), 'w')
+			file = open(os.path.join(output, parser.class_name + '.java'), 'w', encoding='utf8')
 			file.write(java)
 			file.close()
 	
@@ -95,6 +97,7 @@ if __name__ == '__main__':
 	argp.add_argument('-c', '--comments', action='store_true', dest='read_comments', help=Msg.get_message('HELP_COMMENTS'))
 	argp.add_argument('-ep', '--emulate-parens', action='store_true', dest='emulate_parens', help=Msg.get_message('HELP_EMULATE_PAREN'))
 	argp.add_argument('-oc', '--optimize-code', action='store_true', dest='optimize_code', help=Msg.get_message('HELP_OPTIMIZE_CODE'))
+	argp.add_argument('-jr', '--jregex', action='store_true', dest='jregex', help=Msg.get_message('HELP_JREGEX'))
 	argp.add_argument('-uc', '--unreachable-code', action='store_true', dest='unreachable_code', help=Msg.get_message('HELP_UNRECHEABLE_CODE'))
 	argp.add_argument('-ea', '--error-abort', action='store_true', dest='error_abort', help=Msg.get_message('HELP_ERROR_ABORT'))
 	# Opciondes de depuracion

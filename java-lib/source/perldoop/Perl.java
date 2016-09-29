@@ -48,7 +48,10 @@ public class Perl {
      * @return cadena partida
      */
     public static String[] split(String regex, String cad) {
-        return cad.split(regex);
+        if(regex.equals(" ")){
+            return cad.split("(\\s)+");
+        }
+        return cad.split("("+regex+")+");
     }
 
     /**
@@ -257,10 +260,10 @@ public class Perl {
      * @param msg Mensaje de error
      * @return Nunca va a retornar
      */
-    public static Integer die(String msg) {
+    public static Boolean die(String msg) {
         System.err.println(msg);
         System.exit(-1);
-        return 1;
+        return true;
     }
 
     /**

@@ -282,9 +282,9 @@ class Lexer():
 	
 	# Expresiones regualares
 	REGEX_MOD			 = '(i|s|m|x|o|p|d|a|u|l|g|cg|e)?'
-	M_REGEX				 = r'm/.*/' + REGEX_MOD
-	S_REGEX				 = r's/.*/.*/' + REGEX_MOD
-	Y_REGEX				 = r'(y|tr)/.*/.*/' + REGEX_MOD
+	M_REGEX				 = r'm/([^\n\\/]*(\\.)?)*/' + REGEX_MOD
+	S_REGEX				 = r's/([^\n\\/]*(\\.)?)*/([^\n\\/]*(\\.)?)*/' + REGEX_MOD
+	Y_REGEX				 = r'(y|tr)/([^\n\\/]*(\\.)?)*/([^\n\\/]*(\\.)?)*/' + REGEX_MOD
 
 	# Entrada/Salida
 	t_STDIN				 = r'<STDIN>'
@@ -298,8 +298,8 @@ class Lexer():
 	COMMENT_SPECIAL		 = r'\#!.*'
 	COMMENT_SCAPE		 = r'.'
 	COMMENT_EXIT		 = r'\n'
-	COMMENT_IGNORE_LINE = r'.*\#<ignore-line>'
-	COMMENT_IGNORE_BLOCK = r'\#<ignore-block>\n(.|\n)*\#<ignore-block>'
+	COMMENT_IGNORE_LINE = r'.*\#<ignore-line>.*'
+	COMMENT_IGNORE_BLOCK = r'\#<ignore-block>\n(.|\n)*\#<ignore-block>.*'
 	COMMENT_CODE_IMPORT = r'\#<java-import>.*'
 	COMMENT_CODE_LINE	 = r'\#<java-line>.*'
 	
@@ -374,7 +374,14 @@ class Lexer():
 	# Regla para ignorar un bloque de lineas	
 	@TOKEN(COMMENT_IGNORE_BLOCK)
 	def t_COMMENT_IGNORE_BLOCK(self, t):
-		pass
+		label='#<ignore-block>'
+		ln=len(label)
+		blocks=t.value.split(label)
+		if len(blocks)>3:
+			tam=ln+len(blocks[1])+ln
+			self.lexer.lexpos = self.lexer.lexpos - (len(t.value)-tam)
+			t.value=t.value[0:tam]		
+		t.lexer.lineno += t.value.count('\n')
 	
 	# Regla para linea nativa java para importar
 	@TOKEN(COMMENT_CODE_IMPORT)

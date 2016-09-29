@@ -99,13 +99,14 @@ class Statements:
     # Concatena las sentencias
     @classmethod
     def statements_concat(Sts, parser, sts, st):
-        # Añadimos la nueva sentencia
-        sts.value += st.value
-        # Actualizamos las flags
-        sts.flags.update(st.flags)
-        # Comprobamos codigo inalcanzable si esta activado
-        if parser.unreachable_code:
-            Aux.check_unreachable(parser, sts)
+        if st:
+            # Añadimos la nueva sentencia
+            sts.value += st.value
+            # Actualizamos las flags
+            sts.flags.update(st.flags)
+            # Comprobamos codigo inalcanzable si esta activado
+            if parser.unreachable_code:
+                Aux.check_unreachable(parser, sts)
         return sts
         
     # Crea una nueva variable
@@ -329,7 +330,7 @@ class Statements:
         # Si el contenedor es una coleccion
         if len(var.type) > 1:
             # Esta debe ser un array o una lista de Strings
-            if len(var.type) != 2 or var.type[0] == Dtp.STRING or var.type[1] not in (Dtp.ARRAY, Dtp.LIST):
+            if len(var.type) != 2 or var.type[0] not in (Dtp.ARRAY, Dtp.LIST) or var.type[1] != Dtp.STRING:
                 Msg.error(parser, 'FILE_ARRAY_ERROR', var.pos)
             return Sts.equals(parser, var, Code(type=[Dtp.ARRAY, Dtp.STRING], value='Pd.readLines()'))
         else:

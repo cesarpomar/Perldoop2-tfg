@@ -33,6 +33,7 @@ class Options():
         self.read_comments = False  # Indica si el analizador lexico reconoce los comentarios
         self.emulate_parens = False  # Añade parentesis a las funciones si no los tienen
         self.optimize_code = False  # Optimiza el acceso de algunas sentencias
+        self.jregex = False #Evaluar expresiones regualres con libreria jregex
         self.unreachable_code = False  # Comprueba la existencia de codigo inalcanzable
         self.error_abort = False  # Indica si en caso de error para el analisis
         

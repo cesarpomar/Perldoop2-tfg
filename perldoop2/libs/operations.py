@@ -150,7 +150,11 @@ class Operations:
         code.value = var.value + var.read_value + var.end_value
         # Si el tipo es entero, la operacion es directa
         if code.type[0] in (Dtp.INTEGER, Dtp.LONG):
-            code.value = '++' + code.value
+            if len(code.type) == len(var.var.type):
+                code.value = '++' + code.value
+            else:
+                code.value = code.value + ' + 1'
+                code.value = var.value + var.store_value + code.value + var.end_value
         else:
             # Guardamos el tipo de la varaible
             code_type = Code(type=code.type)
@@ -181,7 +185,11 @@ class Operations:
         code.value = var.value + var.read_value + var.end_value
         # Si el tipo es entero, la operacion es directa
         if code.type[0] in (Dtp.INTEGER, Dtp.LONG):
-            code.value = '--' + code.value
+            if len(code.type) == len(var.var.type):
+                code.value = '--' + code.value
+            else:
+                code.value = code.value + ' - 1'
+                code.value = var.value + var.store_value + code.value + var.end_value
         else:
             # Guardamos el tipo de la varaible
             code_type = Code(type=code.type)
@@ -209,9 +217,9 @@ class Operations:
         # Empezamos por el valor de lectura
         code.value = var.value + var.read_value + var.end_value
         # Si el tipo es entero, la operacion es directa
-        if code.type[0] in (Dtp.INTEGER, Dtp.LONG):
+        if code.type[0] in (Dtp.INTEGER, Dtp.LONG) and len(code.type) == len(var.var.type):
             code.value = code.value + '++'
-            code.st_value = code.value       
+            code.st_value = code.value                       
         else:
             # La primera parte es como el otro incremento
             code.value = Ops.plusplus_var(parser, var).value    
@@ -237,7 +245,7 @@ class Operations:
         # Empezamos por el valor de lectura
         code.value = var.value + var.read_value + var.end_value
         # Si el tipo es entero, la operacion es directa
-        if code.type[0] in (Dtp.INTEGER, Dtp.LONG):
+        if code.type[0] in (Dtp.INTEGER, Dtp.LONG) and len(code.type) == len(var.var.type):
             code.value = code.value + '--'
             code.st_value = code.value       
         else:
@@ -279,13 +287,7 @@ class Operations:
     
     @classmethod
     def cmp_string(Ops, parser, str1, str2):
-        code = str1 + str2
-        # Comprobamos las expresiones
-        Aux.check_code(parser, str1)
-        Aux.check_code(parser, str2)   
-        # Componemos la expresion 
-        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ')'
-        code.value_opt = code.value
+        code = Ops.string_compare(Ops, parser, str1, str2, "")
         code.type = [Dtp.INTEGER]
         return code
     
@@ -296,27 +298,38 @@ class Operations:
         Aux.check_code(parser, str1)
         Aux.check_code(parser, str2)   
         # Componemos la expresion 
-        code.value = Cst.to_string(str1) + '.compareTo(' + Cst.to_string(str2) + ') ' + compare
+        code.value = 'Pd.cmp(' + Cst.to_string(str1) + ', ' + Cst.to_string(str2) + ')' + compare
         code.value_opt = code.value
         code.type = [Dtp.BOOLEAN]
         return code
     
     @classmethod
     def m_regex(Ops, parser, exp, regex, pos, negate=False):
+        if parser.jregex:
+            lib = "JRegex"
+        else:
+            lib = "Regex"
         code = exp + Code(pos=pos)
         # Comprobamos la expresion
         Aux.check_code(parser, exp)
         # Componemos la operacion
-        code.value = 'Regex.match(' + Cst.to_string(exp) + ', "' + regex + '")'
+        code.value = lib+'.match(' + Cst.to_string(exp) + ', "' + regex + '")'
         if negate:
+            code.type = [Dtp.BOOLEAN]
             code.value = '!' + code.value
-        # El tipo de la operacion es Booleano
-        code.type = [Dtp.BOOLEAN]
-        code.value_opt = code.value
+            code.value_opt = code.value
+        else:
+            code.type = [Dtp.ARRAY, Dtp.STRING]
+            code.value_opt=code.value
+            code.value = lib+'.matchAvc(' + Cst.to_string(exp) + ', "' + regex + '")'
         return code
     
     @classmethod
     def s_regex(Ops, parser, var, regex, pos):
+        if parser.jregex:
+            lib = "JRegex"
+        else:
+            lib = "Regex"
         code = var + Code(pos=pos, flags={Dtp.STATEMENT:True})
         # Comprobamos la expresion
         Aux.check_code(parser, var)
@@ -326,13 +339,18 @@ class Operations:
         # No puede ser una coleccion
         if len(var.type) > 1:
             Msg.error(parser, 'SCALAR_REQUIRES', var.pos) 
-        value = Code(value='Regex.s(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
+        value = Code(value=lib+'.s(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
         code.value = Aux.readToEqual(var, Cst.to_type(parser, var, value))
         code.type = var.type;
+        code.st_value=code.value
         return code
     
     @classmethod
     def y_regex(Ops, parser, var, regex, pos):
+        if parser.jregex:
+            lib = "JRegex"
+        else:
+            lib = "Regex"
         code = var + Code(pos=pos, flags={Dtp.STATEMENT:True})
         # Comprobamos la expresion
         Aux.check_code(parser, var)
@@ -342,9 +360,10 @@ class Operations:
         # No puede ser una coleccion
         if len(var.type) > 1:
             Msg.error(parser, 'SCALAR_REQUIRES', var.pos) 
-        value = Code(value='Regex.tr(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
+        value = Code(value=lib+'.tr(' + Cst.to_string(var) + ', "' + regex + '")', type=[Dtp.STRING])    
         code.value = Aux.readToEqual(var, Cst.to_type(parser, var, value))
         code.type = var.type;
+        code.st_value=code.value
         return code
     
     @classmethod
@@ -388,7 +407,7 @@ class Operations:
         else:
             b_value = Cst.to_boolean(exp1) + ' || ' + Cst.to_boolean(exp2)    
         # Si los operandos dos operandos booleanos o no son del mismo tipo
-        if (exp1.type[0] == Dtp.BOOLEAN and exp2.type[0] == Dtp.BOOLEAN) or not Cst.equals_type(exp1.type, exp2.type):
+        if (exp1.type[0] == Dtp.BOOLEAN or exp2.type[0] == Dtp.BOOLEAN) or not Cst.equals_type(exp1.type, exp2.type):
             # El codigo es booleano
             code.value = b_value
             code.type = [Dtp.BOOLEAN]   
@@ -412,7 +431,7 @@ class Operations:
         else:
             b_value = Cst.to_boolean(exp1) + ' && ' + Cst.to_boolean(exp2)    
         # Si los operandos dos operandos booleanos o no son del mismo tipo
-        if (exp1.type[0] == Dtp.BOOLEAN and exp2.type[0] == Dtp.BOOLEAN) or not Cst.equals_type(exp1.type, exp2.type):
+        if (exp1.type[0] == Dtp.BOOLEAN or exp2.type[0] == Dtp.BOOLEAN) or not Cst.equals_type(exp1.type, exp2.type):
             # El codigo es booleano
             code.value = b_value
             code.type = [Dtp.BOOLEAN]   
@@ -433,7 +452,7 @@ class Operations:
             b_value = '!(' + Cst.to_boolean(exp) + ')'
         else:
             b_value = '!' + Cst.to_boolean(exp)
-        # Si el valor es booleano el codigo es boobleano   
+        # Si el valor es booleano el codigo es booleano   
         if exp.type[0] == Dtp.BOOLEAN:    
             exp.value = b_value
             exp.value_opt = exp.value
