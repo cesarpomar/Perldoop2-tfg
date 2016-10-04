@@ -329,9 +329,7 @@ public class Perl {
      * @return Array de valores
      */
     public static <T> List<T> values(Map<String, T> hash) {
-        List<T> l = new PerlList<>(hash.size());
-        hash.values().forEach(l::add);
-        return l;
+        return new PerlList<>(hash.values());
     }
 
     /**

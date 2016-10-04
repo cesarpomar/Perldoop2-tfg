@@ -99,7 +99,9 @@ class Variables:
     'Iterator':'java.util.Iterator',
     'Mapper':'org.apache.hadoop.mapreduce.Mapper',
     'Reducer':'org.apache.hadoop.mapreduce.Reducer',
-    'HadoopTypes':'org.apache.hadoop.io.*'
+    'HadoopIO':'org.apache.hadoop.io.*',
+    'HadoopContext':'org.apache.hadoop.mapreduce.Mapper.Context',
+    'IOException':'java.io.IOException'
     }
     
     # Inicializa las variables globales

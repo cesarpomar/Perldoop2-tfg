@@ -61,6 +61,9 @@ class Hadoop():
         if len(p) > 2:
             self.hadoop_type = [Dtp.STRING, Dtp.var_types[p[2]], Dtp.var_types[p[3]], Dtp.var_types[p[4]]]
         self.imports['Mapper'] = True
+        self.imports['HadoopIO'] = True
+        self.imports['HadoopContext'] = True
+        self.imports['IOException'] = True
             
     def p_reducer_init(self, p):
         '''reducer_init : REDUCER_CODE
@@ -71,10 +74,9 @@ class Hadoop():
     
     def p_mapper_code(self, p):
         'statement_type : mapper_init LBRACE block_header statements RBRACE'
-        self.imports['HadoopTypes'] = True
         # Extendemos la clase
         self.extend_class = 'Mapper<Object,' + self.hd_types[self.hadoop_type[1]] + ','
-        self.extend_class += self.hd_types[self.hadoop_type[2]] + ',' + self.hd_types[self.hadoop_type[3]] + ',' + '>'
+        self.extend_class += self.hd_types[self.hadoop_type[2]] + ',' + self.hd_types[self.hadoop_type[3]] + '>'
         # Notacion de sobrescritura
         header = '@Override\n'
         # Cabecera del metodo
@@ -96,9 +98,12 @@ class Hadoop():
         elif self.mapper_loop:
             Msg.error(self, 'HD_MAPPER_MANY_LOOP', Position(p, 1))
         # Cogemos el valor del mapper  
-        code = Sts.equals(self, p[4], Code(type=[self.hd_types[self.hadoop_type[1]]], value='pd_value.get()'))    
+        if self.hadoop_type[1] == Dtp.STRING:
+            code = Sts.equals(self, p[4], Code(type=[self.hadoop_type[1]], value='pd_value.toString()'))    
+        else:
+            code = Sts.equals(self, p[4], Code(type=[self.hadoop_type[1]], value='pd_value.get()'))    
         # Podemos las declaraciones del codigo
-        code.value = Aux.create_declare(code) + code.value
+        code.value = Aux.create_declare(code) + code.value + ';\n'
         # Las borramos
         code.declares = []
         p[0] = code 

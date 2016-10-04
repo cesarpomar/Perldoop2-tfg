@@ -357,15 +357,15 @@ class Casting:
 		# Si es un hash la declaracion es directa
 		if types[0] == Dtp.HASH:
 			if sizes and sizes[0]:
-				return 'new HashPerl<>(' + sizes[0] + ')'
+				return 'new HashPerl<String,'+Cst.create_type(types[1:])+'>(' + sizes[0] + ')'
 			else:
-				return 'new HashPerl<>()'
+				return 'new HashPerl<String,'+Cst.create_type(types[1:])+'>()'
 		# Si es una lista igual
 		elif types[0] == Dtp.LIST:
 			if sizes and sizes[0]:
-				return 'new PerlList<>(' + sizes[0] + ')'
+				return 'new PerlList<'+Cst.create_type(types[1:])+'>(' + sizes[0] + ')'
 			else:
-				return 'new PerlList<>()'
+				return 'new PerlList<'+Cst.create_type(types[1:])+'>()'
 	
 		# El caso contrario añadimos los corchetes de cada array
 		declare = '%t'
