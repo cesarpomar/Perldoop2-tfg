@@ -286,6 +286,9 @@ public class Perl {
      * @return Cadena resultante de la union
      */
     public static String join(String sep, List<String> list) {
+        if(list.isEmpty()){
+            return "";
+        }
         StringBuilder sb = new StringBuilder(list.size() * 16);
         for (String e : list) {
             sb.append(e);
@@ -302,6 +305,9 @@ public class Perl {
      * @return Cadena resultante de la union
      */
     public static String join(String sep, String[] array) {
+        if(array.length==0){
+            return "";
+        }
         StringBuilder sb = new StringBuilder(array.length * 16);
         for (String e : array) {
             sb.append(e);
