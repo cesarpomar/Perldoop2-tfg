@@ -229,14 +229,13 @@ class Auxiliary:
 	@classmethod
 	def interpolateVar(Aux, parser, string):
 		vars=re.findall("\$[a-zA-Z_][a-zA-Z_0-9]*",string)
-		#Msg.error(parser, 'VAR_NOT_EXIST', var[1:])
 		for var in vars:
 			entry = Var.get_var(parser, var[1:])
-			if var and len(entry.type) == 1:
+			if entry and len(entry.type) == 1:
 				string=string.replace(var,"\"+"+var[1:]+"+\"")		
 	
 		vars=re.findall("\$\{[a-zA-Z_][a-zA-Z_0-9]*\}",string)
-		for var in vars:
+		for entry in vars:
 			entry = Var.get_var(parser,var[2:-1])
 			if var and len(entry.type) == 1:					
 				string=string.replace(var,"\"+\""+var[2:-1]+"\"+\"")
